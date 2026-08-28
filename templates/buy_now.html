@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>অর্ডার খাতা | The Amin Jewellers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="order-page">
+<main class="order-workspace">
+    <header class="order-titlebar">
+        <div><p class="eyebrow">✥ THE AMIN JEWELLERS</p><h1>অর্ডার খাতা - নতুন অলংকার তৈরির অর্ডার এন্ট্রি</h1></div>
+        <a href="/dashboard">ড্যাশবোর্ডে ফিরুন</a>
+    </header>
+
+    <section class="order-form-card">
+        <div class="section-title"><span>＋</span><h2>নতুন অলংকার অর্ডার</h2></div>
+        <form method="POST" action="/buy-now" class="order-form">
+            <div class="order-three-col">
+                <label>গ্রাহকের নাম (Customer Name) <b>*</b><input name="customer_name" placeholder="যেমন: মোস্তাফিজা হোসেন" required></label>
+                <label>মোবাইল নম্বর (Phone)<input name="mobile" placeholder="e.g. 01711223344"></label>
+                <label>তৈরির বিবরণ (Item Details) <b>*</b><input name="item_details" placeholder="যেমন: ৩ ভরি ২ আনা ওজনের গোল্ড চেইন" required></label>
+                <label>ক্যারেট (Grade)<select name="grade"><option>22K Gold</option><option>21K Gold</option><option>18K Gold</option><option>24K Gold</option></select></label>
+                <label>ভরি ওজন (Bhori Weight)<input type="number" name="bhori_weight" min="0" step="0.001" value="0"></label>
+                <label>আনা ওজন (Ana Weight)<input type="number" name="ana_weight" min="0" step="0.001" value="0"></label>
+                <label>মোট আনুমানিক মূল্য (Est Price)<input type="number" name="estimated_price" min="0" step="0.01" value="0"></label>
+                <label>অগ্রিম প্রদত্ত মূল্য (Advance Paid)<input type="number" name="advance_paid" min="0" step="0.01" value="0"></label>
+                <label>ডেলিভারি তারিখ (Delivery Date)<input type="date" name="delivery_date"></label>
+            </div>
+            <label>অতিরিক্ত নির্দেশনা (Special Requests)<textarea name="special_requests" placeholder="ডিজাইন বা অন্য কোনো বিশেষ নির্দেশনা লিখুন..."></textarea></label>
+            <div class="order-submit-row"><span>অগ্রিম মূল্য save করার পর বাকি টাকা স্বয়ংক্রিয়ভাবে দেখাবে।</span><button type="submit">নতুন অর্ডার যুক্ত করুন</button></div>
+        </form>
+    </section>
+
+    <section class="order-list-card">
+        <div class="records-heading"><div><p class="eyebrow">ORDER RECORDS</p><h2>চলতি অর্ডার তালিকা</h2></div><span class="record-count">{{ orders|length }} টি অর্ডার</span></div>
+        <div class="table-scroll">
+            <table class="order-table">
+                <thead><tr><th>অর্ডার নং</th><th>গ্রাহক</th><th>অলংকার বিবরণ</th><th>ওজন ও ক্যারেট</th><th>মোট মূল্য</th><th>অগ্রিম</th><th>বাকি</th><th>ডেলিভারি</th><th>অ্যাকশন</th></tr></thead>
+                <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td><span class="voucher-id">ORD-{{ "%04d"|format(order['id']) }}</span></td>
+                        <td><strong>{{ order['customer_name'] }}</strong><small>{{ order['mobile'] or 'মোবাইল দেয়া নেই' }}</small></td>
+                        <td><strong>{{ order['item_details'] }}</strong><small>{{ order['grade'] }}</small></td>
+                        <td>{{ order['bhori_weight'] }} ভরি<br><small>{{ order['ana_weight'] }} আনা</small></td>
+                        <td><strong class="money">৳ {{ "%.2f"|format(order['estimated_price']) }}</strong></td>
+                        <td><span class="paid-money">৳ {{ "%.2f"|format(order['advance_paid']) }}</span></td>
+                        <td><span class="due-money">৳ {{ "%.2f"|format(order['estimated_price'] - order['advance_paid']) }}</span></td>
+                        <td>{{ order['delivery_date'] or '-' }}</td>
+                        <td><a class="delete-button" href="/buy-now/delete/{{ order['id'] }}" onclick="return confirm('Delete this order?')">মুছুন</a></td>
+                    </tr>
+                {% else %}
+                    <tr><td class="empty-record" colspan="9">এখনও কোনো অর্ডার নেই। উপরের form থেকে নতুন অর্ডার যোগ করুন।</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>

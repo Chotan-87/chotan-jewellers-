@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Voucher #{{ voucher['id'] }} - The Amin Jewellers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+    <div><h2>THE AMIN JEWELLERS</h2><span>Mortgage loan voucher</span></div>
+    <div><a href="/loans">Loan Entry</a>&nbsp;&nbsp;<a href="/dashboard">Dashboard</a></div>
+</header>
+<main class="content">
+    <section class="card">
+        <h1>Loan Voucher #{{ voucher['id'] }}</h1>
+        <p><strong>Customer:</strong> {{ voucher['customer_name'] }}</p>
+        <p><strong>Mobile:</strong> {{ voucher['mobile'] or '-' }}</p>
+        <p><strong>Voucher date:</strong> {{ voucher['created_at'] }}</p>
+        <hr>
+        <table width="100%" border="1" cellpadding="10">
+            <thead><tr><th>Item</th><th>Weight</th><th>Amount</th><th>Interest</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for loan in loans %}
+                <tr><td>{{ loan['item_details'] }}</td><td>{{ loan['weight'] or 0 }} g</td><td>৳ {{ '%.2f'|format(loan['amount']) }}</td><td>{{ loan['interest_rate'] }}%</td><td>{{ loan['status'] }}</td></tr>
+            {% else %}
+                <tr><td colspan="5">No loan entries.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <hr>
+        <h2>Total loan: ৳ {{ '%.2f'|format(totals['amount']) }}</h2>
+        <p>Interest for one billing period: ৳ {{ '%.2f'|format(totals['interest']) }}</p>
+        <button type="button" onclick="window.print()">Print Voucher Invoice</button>
+    </section>
+</main>
+</body>
+</html>

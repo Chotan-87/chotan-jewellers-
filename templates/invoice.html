@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice #{{ invoice['id'] }} - The Amin Jewellers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+    <div>
+        <h2>THE AMIN JEWELLERS</h2>
+        <span>Gold jewellery invoice</span>
+    </div>
+    <div>
+        <a href="/dashboard">Dashboard</a>
+        &nbsp;&nbsp;
+        <a href="/calculator">Calculator</a>
+        &nbsp;&nbsp;
+        <a href="/logout">Logout</a>
+    </div>
+</header>
+
+<main class="content">
+    <section class="card">
+        <h1>Invoice #{{ invoice['id'] }}</h1>
+        <p><strong>Date:</strong> {{ invoice['created_at'] }}</p>
+        <p><strong>Customer:</strong> {{ invoice['customer_name'] }}</p>
+        <p><strong>Mobile:</strong> {{ invoice['mobile'] or '-' }}</p>
+        <hr>
+        <p><strong>Karat:</strong> {{ invoice['karat'] }}</p>
+        <p><strong>Weight:</strong> {{ invoice['weight'] }} Gram</p>
+        <p><strong>Gold rate:</strong> ৳ {{ '%.2f'|format(invoice['rate']) }}</p>
+        <p><strong>Gold value:</strong> ৳ {{ '%.2f'|format(invoice['gold_value']) }}</p>
+        <p><strong>Making charge:</strong> ৳ {{ '%.2f'|format(invoice['making']) }}</p>
+        <p><strong>Bat:</strong> ৳ {{ '%.2f'|format(invoice['bat']) }}</p>
+        <p><strong>Stone:</strong> ৳ {{ '%.2f'|format(invoice['stone']) }}</p>
+        <p><strong>VAT:</strong> ৳ {{ '%.2f'|format(invoice['vat']) }}</p>
+        <hr>
+        <h2>Grand Total: ৳ {{ '%.2f'|format(invoice['grand_total']) }}</h2>
+        <button type="button" onclick="window.print()">Print Invoice</button>
+    </section>
+</main>
+</body>
+</html>

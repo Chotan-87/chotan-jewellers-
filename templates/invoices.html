@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoices - The Amin Jewellers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="topbar">
+    <div>
+        <h2>THE AMIN JEWELLERS</h2>
+        <span>বন্দরটিলা, চট্টগ্রাম</span>
+    </div>
+    <div>
+        👤 Admin &nbsp;&nbsp;
+        <a href="/logout">Logout</a>
+    </div>
+</header>
+
+<div class="dashboard">
+    <aside class="sidebar">
+        <h3>MENU</h3>
+        <a href="/dashboard">🏠 Dashboard</a>
+        <a href="/gold-stock">💎 Gold Stock</a>
+        <a href="/loans">💰 Loan Entry</a>
+        <a href="/buy-now">🛍️ Buy Now Order</a>
+        <a href="/customers">👥 Customer</a>
+        <a href="/calculator">🧮 Calculator</a>
+        <a href="/invoices">🧾 Invoices</a>
+    </aside>
+
+    <main class="content">
+        <h1>🧾 Invoices Record</h1>
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Mobile</th>
+                        <th>Karat</th>
+                        <th>Weight</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for invoice in invoices %}
+                    <tr>
+                        <td>{{ invoice['id'] }}</td>
+                        <td>{{ invoice['created_at'] }}</td>
+                        <td>{{ invoice['customer_name'] }}</td>
+                        <td>{{ invoice['mobile'] or '-' }}</td>
+                        <td>{{ invoice['karat'] }}</td>
+                        <td>{{ invoice['weight'] }} g</td>
+                        <td>৳ {{ '%.2f'|format(invoice['grand_total']) }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7">No invoices have been created yet.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

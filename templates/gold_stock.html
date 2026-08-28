@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Stock Management | The Amin Jewellers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .serial-badge { background: #1e1b4b; color: #fff; font-size: 11px; font-weight: bold; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+        .qr-thumb { width: 50px; height: 50px; border: 1px solid #ddd; border-radius: 4px; vertical-align: middle; cursor: pointer; }
+        .qr-thumb:hover { transform: scale(1.1); transition: transform 0.2s; }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div>
+        <h2>THE AMIN JEWELLERS</h2>
+        <span>বন্দরটিলা, চট্টগ্রাম</span>
+    </div>
+    <div>
+        👤 Admin &nbsp;&nbsp;
+        <a href="/logout">Logout</a>
+    </div>
+</header>
+
+<div class="dashboard">
+    <aside class="sidebar">
+        <h3>MENU</h3>
+        <a href="/dashboard">🏠 Dashboard</a>
+        <a href="/gold-stock">💎 Gold Stock</a>
+        <a href="/loans">💰 Loan Entry</a>
+        <a href="/buy-now">🛍️ Buy Now Order</a>
+        <a href="/customers">👥 Customer</a>
+        <a href="/calculator">🧮 Calculator</a>
+        <a href="/invoices">🧾 Invoices</a>
+    </aside>
+
+    <main class="content">
+        <h1>💎 Gold Stock Management (স্টক খাতা)</h1>
+
+        <!-- ADD GOLD -->
+        <div class="card">
+            <h2>নতুন Gold Stock যোগ করুন</h2>
+            <form method="POST" action="/gold-stock">
+                <input type="text" name="serial_no" placeholder="SLR / Serial Number (যেমন: GS-2026-0001)">
+                <input type="text" name="item_name" placeholder="Item Name (যেমন: ২২ ক্যারেট হারের সেট)" required>
+                <select name="karat" required>
+                    <option value="">Select Karat</option>
+                    <option value="24K">24K</option>
+                    <option value="22K">22K</option>
+                    <option value="21K">21K</option>
+                    <option value="18K">18K</option>
+                </select>
+                <input type="number" step="0.001" name="weight" placeholder="Weight (Gram)" required>
+                <input type="number" name="quantity" placeholder="Quantity" value="1" required>
+                <input type="number" step="0.01" name="purchase_rate" placeholder="Purchase Rate (৳)" required>
+                <button type="submit">SAVE GOLD STOCK</button>
+            </form>
+        </div>
+
+        <!-- STOCK LIST -->
+        <div class="card">
+            <h2>Gold Stock List (সিরিয়াল নম্বর ও কিউআর কোড)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>SLR No.</th>
+                        <th>QR Code</th>
+                        <th>Item Name</th>
+                        <th>Karat</th>
+                        <th>Weight</th>
+                        <th>Qty</th>
+                        <th>Purchase Rate</th>
+                        <th>Total Value</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for stock in stocks %}
+                    {% set sl_no = stock['serial_no'] or ("GS-2026-%04d"|format(stock['id'])) %}
+                    {% set qr_data = "Item: " ~ stock['item_name'] ~ " | SL: " ~ sl_no ~ " | Karat: " ~ stock['karat'] ~ " | Weight: " ~ stock['weight'] ~ "g | Price: BDT " ~ stock['total_value'] %}
+                    <tr>
+                        <td><span class="serial-badge">{{ sl_no }}</span></td>
+                        <td>
+                            <img class="qr-thumb" src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ qr_data|urlencode }}" alt="QR Code" title="স্ক্যান করুন: {{ sl_no }}" onclick="window.open(this.src, '_blank')">
+                        </td>
+                        <td><strong>{{ stock["item_name"] }}</strong></td>
+                        <td><span style="background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 12px;">{{ stock["karat"] }}</span></td>
+                        <td>{{ stock["weight"] }} g</td>
+                        <td>{{ stock["quantity"] }}</td>
+                        <td>৳ {{ "%.2f"|format(stock["purchase_rate"]) }}</td>
+                        <td><strong style="color: #05845c;">৳ {{ "%.2f"|format(stock["total_value"]) }}</strong></td>
+                        <td>
+                            <a href="/gold-stock/delete/{{ stock['id'] }}" onclick="return confirm('Gold Stock Delete করবেন?')" style="color: #dc2626; font-weight: bold; text-decoration: none;">Delete</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="9">কোনো Gold Stock পাওয়া যায়নি।</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>স্বর্ণ ও রৌপ্যের আজকের লাইভ বাজারমূল্য | দি আমিন জুয়েলার্স</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #faf7f2; color: #2d2621; font-family: 'Hind Siliguri', 'Segoe UI', Arial, sans-serif; padding: 25px; }
+
+        .top-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .top-title { font-size: 24px; font-weight: 800; color: #1c1815; display: flex; align-items: center; gap: 10px; }
+        .live-tag { background: #e6f7ed; color: #16a34a; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 12px; letter-spacing: 0.05em; }
+        .sub-title { color: #786e65; font-size: 13px; margin-top: 5px; }
+        .btn-default-rate { background: #efece6; color: #61574e; border: none; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; }
+
+        .alert-banner { background: #fefce8; border: 1px solid #fef08a; border-radius: 12px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .alert-text { color: #854d0e; font-size: 13px; line-height: 1.5; }
+        .alert-text strong { font-size: 14px; color: #713f12; }
+        .auto-toggle { background: #fef9c3; border: 1px solid #fef08a; padding: 6px 14px; border-radius: 8px; color: #713f12; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+
+        .calc-grid { display: grid; grid-template-columns: 1fr 380px; gap: 25px; align-items: start; }
+
+        .form-card { background: #ffffff; border-radius: 18px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 800; color: #91857c; letter-spacing: 0.03em; margin-bottom: 8px; text-transform: uppercase; }
+        .form-input, .form-select { width: 100%; background: #f9f8f6; border: 1px solid #e2ddd5; border-radius: 10px; padding: 13px 15px; font-size: 14px; color: #1c1815; outline: none; transition: border-color 0.2s; }
+        .form-input:focus, .form-select:focus { border-color: #d97706; background: #fff; }
+
+        .weight-container { background: #fbfaf8; border: 1px solid #ece8e1; border-radius: 12px; padding: 16px; margin-bottom: 18px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .sub-input-box { text-align: center; }
+        .sub-input-box label { font-size: 10px; color: #a3978c; display: block; margin-bottom: 5px; font-weight: bold; }
+        .sub-input-box input { width: 100%; background: #ffffff; border: 1px solid #e2ddd5; border-radius: 8px; padding: 10px; font-size: 15px; font-weight: bold; text-align: center; color: #1c1815; outline: none; }
+
+        .gram-input-wrapper { position: relative; display: flex; align-items: center; }
+        .gram-input-wrapper input { padding-right: 90px; }
+        .gram-unit-tag { position: absolute; right: 15px; color: #a3978c; font-size: 11px; font-weight: 800; pointer-events: none; }
+
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+
+        .summary-card { background: #ffffff; border-radius: 18px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .summary-title { font-size: 16px; font-weight: bold; color: #1c1815; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; }
+        .summary-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; font-size: 13px; color: #786e65; }
+        .summary-row.gold-highlight { color: #ca8a04; font-weight: bold; }
+        .summary-row .val { color: #1c1815; font-weight: bold; text-align: right; }
+        .summary-row .sub-val { font-size: 10px; color: #a3978c; display: block; font-weight: normal; }
+
+        .total-banner { background: #1a1714; color: #facc15; border-radius: 16px; padding: 22px; text-align: center; margin: 25px 0 18px; }
+        .total-banner small { color: #a3978c; font-size: 11px; display: block; margin-bottom: 6px; }
+        .total-banner h1 { font-size: 32px; font-weight: 900; letter-spacing: -0.02em; }
+
+        .btn-add-memo { background: #d97706; color: #ffffff; border: none; border-radius: 12px; width: 100%; padding: 16px; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25); transition: background 0.2s; }
+        .btn-add-memo:hover { background: #b45309; }
+    </style>
+</head>
+<body>
+
+<div class="top-header">
+    <div>
+        <h1 class="top-title">
+            📈 স্বর্ণ ও রৌপ্যের আজকের লাইভ বাজারমূল্য
+            <span class="live-tag">• BAJUS LIVE STREAM</span>
+        </h1>
+        <p class="sub-title">আপনার মেমো জেনারেটর এবং মূল্য ক্যালকুলেটরের জন্য সোনার ও রূপার আজকের দর ক্যারেট অনুযায়ী ঠিক করুন।</p>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <a href="/dashboard" style="background: #1a1714; color: #fff; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: bold; text-decoration: none;">🏠 ড্যাশবোর্ড</a>
+        <button type="button" class="btn-default-rate">ডিফল্ট দর</button>
+    </div>
+</div>
+
+<div class="alert-banner">
+    <div class="alert-text">
+        <strong>⚡ ২২ ক্যারেটের দর পরিবর্তন করলে অটো ২১, ১৮ ক্যারেট ও সনাতন হিসাব:</strong><br>
+        ২২ ক্যারেট ইনপুট দিলে নির্দিষ্ট বিশুদ্ধতা অনুপাতে ২১K (৯১.৬%), ১৮K (৭৫.০%) ও সনাতন (৫৮.৩%) সক্রিয়ভাবে পরিবর্তন হবে।
+    </div>
+    <div class="auto-toggle">
+        <input type="checkbox" checked style="accent-color: #d97706;"> অটো পরিবর্তন চালু
+    </div>
+</div>
+
+<div class="calc-grid">
+    <!-- LEFT INPUT FORM CARD -->
+    <div class="form-card">
+        <form method="POST" id="calcForm" action="/invoice/create">
+            <div class="form-group">
+                <label>অলংকার / পণ্যের বিবরণ (ITEM NAME)</label>
+                <input type="text" class="form-input" name="item_name" id="item_name" placeholder="যেমন: সোনার ২২ ক্যারেট গলার হার, কানের দুল, আংটি..." required>
+            </div>
+
+            <div class="form-group">
+                <label>স্বর্ণের ধরন (ক্যারেট)</label>
+                <select class="form-select" name="karat" id="karat_select" onchange="calculateLive()" required>
+                    <option value="22K" data-rate="125400">22 Carat Gold (৳১,২৫,৪০০)</option>
+                    <option value="24K" data-rate="136800">24 Carat Gold (৳১,৩৬,৮০০)</option>
+                    <option value="21K" data-rate="119700">21 Carat Gold (৳১,১৯,৭০০)</option>
+                    <option value="18K" data-rate="102600">18 Carat Gold (৳১,০২,৬০০)</option>
+                </select>
+            </div>
+
+            <div class="weight-container">
+                <label style="display: block; font-size: 11px; font-weight: 800; color: #91857c; margin-bottom: 10px;">ঐতিহ্যবাহী ওজন হিসাব (ভরি - আনা - রতি - পয়েন্ট)</label>
+                <div class="grid-4">
+                    <div class="sub-input-box">
+                        <label>ভরি (BHORI)</label>
+                        <input type="number" id="bh" value="1" oninput="fromBhori()">
+                    </div>
+                    <div class="sub-input-box">
+                        <label>আনা (ANA)</label>
+                        <input type="number" id="an" value="0" oninput="fromBhori()">
+                    </div>
+                    <div class="sub-input-box">
+                        <label>রতি (ROTI)</label>
+                        <input type="number" id="ro" value="0" oninput="fromBhori()">
+                    </div>
+                    <div class="sub-input-box">
+                        <label>পয়েন্ট (PT)</label>
+                        <input type="number" id="pt" value="0" oninput="fromBhori()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>সরাসরি গ্রাম হিসাব (GRAMS)</label>
+                <div class="gram-input-wrapper">
+                    <input type="number" step="0.001" class="form-input" name="weight" id="gram_input" value="11.664" oninput="fromGram()" required>
+                    <span class="gram-unit-tag">GRAMS (G)</span>
+                </div>
+            </div>
+
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>ওয়েস্টেজ % (WASTAGE)</label>
+                    <input type="number" step="0.1" class="form-input" name="vat" id="wastage" value="5" oninput="calculateLive()">
+                </div>
+                <div class="form-group">
+                    <label>মজুরি (MAKING BDT)</label>
+                    <input type="number" step="1" class="form-input" name="making" id="making" value="3000" oninput="calculateLive()">
+                </div>
+                <div class="form-group">
+                    <label>ডিসকাউন্ট (৳)</label>
+                    <input type="number" step="1" class="form-input" name="discount" id="discount" value="0" oninput="calculateLive()">
+                </div>
+            </div>
+
+            <input type="hidden" name="customer_name" value="সাধারণ কাস্টমার">
+            <input type="hidden" name="mobile" value="">
+            <input type="hidden" name="rate" id="hidden_rate" value="125400">
+            <input type="hidden" name="gold_value" id="hidden_gold_val">
+            <input type="hidden" name="bat" value="0">
+            <input type="hidden" name="stone" value="0">
+            <input type="hidden" name="grand_total" id="hidden_grand_total">
+        </form>
+    </div>
+
+    <!-- RIGHT SUMMARY CARD -->
+    <div class="summary-card">
+        <div class="summary-title">
+            <span>মূল্য হিসাব সারসংক্ষেপ</span>
+            <span>🧮</span>
+        </div>
+
+        <div class="summary-row">
+            <span>ওজন:</span>
+            <div class="val">
+                <span id="sum_bhori">1 ভরি</span>
+                <span class="sub-val" id="sum_gram">(11.664g)</span>
+            </div>
+        </div>
+
+        <div class="summary-row">
+            <span>স্বর্ণের ক্যারেট দর:</span>
+            <div class="val">
+                <span id="sum_rate">BDT ১,২৫,৪০০</span>
+                <span class="sub-val">Taka / ভরি</span>
+            </div>
+        </div>
+
+        <div class="summary-row">
+            <span>মূল স্বর্ণের দাম:</span>
+            <div class="val">
+                <span id="sum_gold_val">BDT ১,২৫,৪০০</span>
+                <span class="sub-val">Taka</span>
+            </div>
+        </div>
+
+        <div class="summary-row gold-highlight">
+            <span>অপচয় / ওয়েস্টেজ (<span id="sum_wastage_pct">5</span>%):</span>
+            <div class="val" style="color: #ca8a04;">
+                <span id="sum_wastage_val">BDT ৬,২৭০</span>
+                <span class="sub-val" style="color: #ca8a04;">Taka</span>
+            </div>
+        </div>
+
+        <div class="summary-row">
+            <span>গহনা বানানোর মজুরি:</span>
+            <div class="val">
+                <span id="sum_making">BDT ৩,০০০</span>
+                <span class="sub-val">Taka</span>
+            </div>
+        </div>
+
+        <div class="total-banner">
+            <small>সর্বমোট প্রদেয় মূল্য</small>
+            <h1 id="sum_total">৳ ১,৪১,৬৭০</h1>
+        </div>
+
+        <button type="button" class="btn-add-memo" onclick="document.getElementById('calcForm').submit();">
+            ＋ ক্যাশ মেমোতে যুক্ত করুন
+        </button>
+    </div>
+</div>
+
+<script>
+function toBanglaDigit(num) {
+    const banglaDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return num.toString().replace(/\d/g, d => banglaDigits[d]);
+}
+
+function fromBhori() {
+    const bh = parseFloat(document.getElementById('bh').value) || 0;
+    const an = parseFloat(document.getElementById('an').value) || 0;
+    const ro = parseFloat(document.getElementById('ro').value) || 0;
+    const pt = parseFloat(document.getElementById('pt').value) || 0;
+
+    const totalBhori = bh + (an / 16) + (ro / 96) + (pt / 960);
+    const gram = totalBhori * 11.664;
+    document.getElementById('gram_input').value = gram.toFixed(3);
+    calculateLive();
+}
+
+function fromGram() {
+    const g = parseFloat(document.getElementById('gram_input').value) || 0;
+    const totalBhori = g / 11.664;
+    const bh = Math.floor(totalBhori);
+    const remAna = (totalBhori - bh) * 16;
+    const an = Math.floor(remAna);
+    const remRoti = (remAna - an) * 6;
+    const ro = Math.floor(remRoti);
+    const pt = Math.round((remRoti - ro) * 10);
+
+    document.getElementById('bh').value = bh;
+    document.getElementById('an').value = an;
+    document.getElementById('ro').value = ro;
+    document.getElementById('pt').value = pt;
+    calculateLive();
+}
+
+function calculateLive() {
+    const sel = document.getElementById('karat_select');
+    const rate = parseFloat(sel.options[sel.selectedIndex].getAttribute('data-rate')) || 125400;
+    const gram = parseFloat(document.getElementById('gram_input').value) || 0;
+    const wastagePct = parseFloat(document.getElementById('wastage').value) || 0;
+    const making = parseFloat(document.getElementById('making').value) || 0;
+    const discount = parseFloat(document.getElementById('discount').value) || 0;
+
+    const bhoriCount = gram / 11.664;
+    const goldValue = bhoriCount * rate;
+    const wastageVal = (goldValue * wastagePct) / 100;
+    const grandTotal = goldValue + wastageVal + making - discount;
+
+    document.getElementById('sum_bhori').innerText = toBanglaDigit(bhoriCount.toFixed(2)) + ' ভরি';
+    document.getElementById('sum_gram').innerText = '(' + gram.toFixed(3) + 'g)';
+    document.getElementById('sum_rate').innerText = 'BDT ' + toBanglaDigit(rate.toLocaleString('en-IN'));
+    document.getElementById('sum_gold_val').innerText = 'BDT ' + toBanglaDigit(Math.round(goldValue).toLocaleString('en-IN'));
+    document.getElementById('sum_wastage_pct').innerText = toBanglaDigit(wastagePct);
+    document.getElementById('sum_wastage_val').innerText = 'BDT ' + toBanglaDigit(Math.round(wastageVal).toLocaleString('en-IN'));
+    document.getElementById('sum_making').innerText = 'BDT ' + toBanglaDigit(making.toLocaleString('en-IN'));
+    document.getElementById('sum_total').innerText = '৳ ' + toBanglaDigit(Math.round(grandTotal).toLocaleString('en-IN'));
+
+    document.getElementById('hidden_rate').value = rate;
+    document.getElementById('hidden_gold_val').value = goldValue.toFixed(2);
+    document.getElementById('hidden_grand_total').value = grandTotal.toFixed(2);
+}
+
+window.onload = calculateLive;
+</script>
+</body>
+</html>

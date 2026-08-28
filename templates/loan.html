@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}স্বর্ণ বন্ধক ও ঋণ খাতা (পন শপ লেজার) | The Amin Jewellers{% endblock %}
+
+{% block extra_head %}
+<style>
+    .pawn-badge { background: #eef2ff; color: #3730a3; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+    .pawn-status { background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; }
+    .tag-btn { background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; margin-right: 4px; }
+    .tag-btn:hover, .tag-btn.active { background: #1f2937; color: #fff; border-color: #1f2937; }
+    .weight-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 4px; }
+    .weight-grid input { font-size: 11px; padding: 6px; text-align: center; }
+    .stat-box { background: #fef3c7; border: 1px solid #fde68a; padding: 10px 16px; border-radius: 8px; text-align: right; }
+    .stat-box small { color: #92400e; font-size: 11px; font-weight: bold; display: block; }
+    .stat-box strong { color: #78350f; font-size: 16px; font-weight: 800; }
+    .filter-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .filter-pill { background: #fff; border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 20px; font-size: 12px; color: #4b5563; text-decoration: none; cursor: pointer; }
+    .filter-pill.active { background: #1e1b4b; color: #fff; border-color: #1e1b4b; }
+    .action-btns a, .action-btns button { font-size: 10px; padding: 4px 8px; border-radius: 4px; text-decoration: none; border: none; cursor: pointer; margin-right: 2px; margin-bottom: 2px; display: inline-block; }
+    .btn-pay { background: #16a34a; color: #fff; }
+    .btn-release { background: #2563eb; color: #fff; }
+    .btn-edit { background: #4b5563; color: #fff; }
+    .btn-receipt { background: #d97706; color: #fff; }
+    .btn-sms { background: #0284c7; color: #fff; }
+    .btn-wa { background: #15803d; color: #fff; }
+    .btn-del { background: #dc2626; color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="loan-workspace" style="padding: 0; min-height: auto;">
+    <header class="loan-header" style="margin-bottom: 16px;">
+        <div>
+            <p class="eyebrow">✥ THE AMIN JEWELLERS · PAWN SHOP LEDGER</p>
+            <h1 style="font-size: 20px; margin-top: 3px; color: #2d2018;">স্বর্ণ বন্ধক ও ঋণ খাতা (পন শপ লেজার)</h1>
+            <p class="loan-subtitle">গ্রাহকের স্বর্ণ বন্ধক রেখে ঋণ প্রদান, মাসিক সুদের হার হিসাব, সুদের কিস্তি আদায় এবং বন্ধকি মাল খালাস খাতা।</p>
+        </div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <div class="stat-box">
+                <small>মোট একটিভ ঋণ</small>
+                <strong>BDT {{ "%.2f"|format(total_active_loan or 0) }} Taka</strong>
+            </div>
+            <div class="stat-box" style="background: #e0f2fe; border-color: #bae6fd;">
+                <small style="color: #075985;">মোট সংগৃহীত সুদ</small>
+                <strong style="color: #0369a1;">BDT {{ "%.2f"|format(total_interest or 0) }} Taka</strong>
+            </div>
+        </div>
+    </header>
+
+    <section class="loan-toolbar">
+        <div style="width: 100%;">
+            <div class="search-shell">
+                🔍 <input type="search" id="loanSearch" placeholder="গ্রাহকের নাম, ফোন নম্বর বা রসিদ নং দিয়ে তাৎক্ষণিক খুঁজুন..." oninput="filterLoans(this.value)">
+            </div>
+            <div class="filter-pills">
+                <button type="button" class="filter-pill active" onclick="filterByStatus('all')">সব রেকর্ড ({{ loans|length }})</button>
+                <button type="button" class="filter-pill" onclick="filterByStatus('active')">চলতি বন্ধক</button>
+                <button type="button" class="filter-pill" onclick="filterByStatus('released')">খালাসকৃত</button>
+                <button type="button" class="filter-pill" onclick="filterByStatus('expired')">মেয়াদউত্তীর্ণ</button>
+                <a href="#" onclick="alert('CSV ফাইল ডাউনলোড হচ্ছে...')" class="filter-pill" style="margin-left: auto; background: #059669; color: #fff; border: none;">📥 সিএসভি ডাউনলোড</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="loan-grid">
+        <!-- LEFT: FORM CARD -->
+        <section class="loan-form-card">
+            <div class="section-title"><span>＋</span><h2>নতুন বন্ধকি রসিদ এন্ট্রি</h2></div>
+            <form method="POST" action="{{ url_for('loans') }}" class="loan-form">
+                <label>গ্রাহকের নাম <b>*</b>
+                    <input type="text" name="customer_name" id="cust_name" placeholder="যেমন: মোঃ আবুল হাসান" required>
+                </label>
+
+                <div class="loan-two-col">
+                    <label>মোবাইল নম্বর
+                        <input type="text" name="mobile" placeholder="017xxxxxxxx">
+                    </label>
+                    <label>রসিদ নম্বর
+                        <input type="text" readonly value="LN-2026-{{ '%04d'|format(loans|length + 1) }}" style="background: #f3f4f6; color: #6b7280; font-weight: bold;">
+                    </label>
+                </div>
+
+                <label>ঠিকানা (Address)
+                    <input type="text" name="address" placeholder="গ্রাহকের বর্তমান ঠিকানা">
+                </label>
+
+                <label>বন্ধকি স্বর্ণের অলংকারের বিবরণ <b>*</b>
+                    <input type="text" name="item_details" id="item_details" placeholder="যেমন: ২২ ক্যারেট সোনার চেইন ও ২ টি আংটি" required>
+                </label>
+
+                <div style="margin-top: 8px;">
+                    <label style="margin-bottom: 2px;">স্বর্ণের ক্যারেট (Carat) <b>*</b></label>
+                    <div>
+                        <button type="button" class="tag-btn active" onclick="setCarat('22K')">22K</button>
+                        <button type="button" class="tag-btn" onclick="setCarat('21K')">21K</button>
+                        <button type="button" class="tag-btn" onclick="setCarat('18K')">18K</button>
+                        <button type="button" class="tag-btn" onclick="setCarat('সনাতন')">সনাতন</button>
+                        <button type="button" class="tag-btn" onclick="setCarat('রূপা')">রূপা</button>
+                    </div>
+                </div>
+
+                <div class="loan-two-col" style="margin-top: 8px;">
+                    <label>ওজন (গ্রাম / Grams Equivalent)
+                        <input type="number" step="0.001" min="0" name="weight" id="gram_weight" placeholder="0.000" oninput="gramToBhori(this.value)">
+                    </label>
+                    <label>মাসিক সুদ (%) <b>*</b>
+                        <input type="number" step="0.01" min="0" name="interest_rate" value="3.0" required>
+                    </label>
+                </div>
+
+                <label style="margin-top: 8px;">স্বর্ণের ওজন হিসাব (ভরি - আনা - রতি - পয়েন্ট)
+                    <div class="weight-grid">
+                        <input type="number" id="w_bhori" placeholder="ভরি" oninput="bhoriToGram()">
+                        <input type="number" id="w_ana" placeholder="আনা" oninput="bhoriToGram()">
+                        <input type="number" id="w_roti" placeholder="রতি" oninput="bhoriToGram()">
+                        <input type="number" id="w_point" placeholder="পয়েন্ট" oninput="bhoriToGram()">
+                    </div>
+                </label>
+
+                <div class="loan-two-col" style="margin-top: 8px;">
+                    <label>প্রদত্ত ঋণ (Loan Issued ৳) <b>*</b>
+                        <input type="number" step="0.01" min="0.01" name="amount" id="loan_amount" placeholder="50000" oninput="updateBadge(this.value)" required>
+                    </label>
+                    <label>বন্ধক গ্রহণের তারিখ
+                        <input type="date" name="issue_date" value="2026-03-01">
+                    </label>
+                </div>
+
+                <div style="background: #fef3c7; border: 1px solid #fde68a; padding: 8px 12px; border-radius: 6px; margin-top: 10px; font-weight: bold; color: #92400e; font-size: 12px;">
+                    পরিমাণ: BDT <span id="badge_amt">50,000</span> Taka
+                </div>
+
+                <button class="loan-submit" type="submit" style="background: #1e1b4b; margin-top: 12px;">🏷️ বন্ধকি ঋণ রসিদ তৈরি করুন</button>
+            </form>
+        </section>
+
+        <!-- RIGHT: RECORDS TABLE CARD -->
+        <section class="loan-records-card">
+            <div class="records-heading">
+                <div>
+                    <p class="eyebrow">PAWN RECORDS LEDGER</p>
+                    <h2>চলতি ঋণ খাতা ও রসিদ সমূহের বিবরণ</h2>
+                </div>
+                <span class="record-count">{{ loans|length }} টি রসিদ</span>
+            </div>
+            <div class="table-scroll">
+                <table class="loan-table" id="loansTable">
+                    <thead>
+                        <tr>
+                            <th>রসিদ নম্বর</th>
+                            <th>গ্রাহক বিবরণী</th>
+                            <th>বন্ধকি পণ্য ও ক্যারেট</th>
+                            <th>ঋণ পরিমাণ</th>
+                            <th>সুদ হিসাব (মাসিক)</th>
+                            <th>অবস্থা</th>
+                            <th>অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for loan in loans %}
+                        <tr data-loan-row data-status="{{ (loan['status'] or 'active')|lower }}">
+                            <td><span class="voucher-id">LN-2026-{{ "%04d"|format(loan['voucher_id'] or loan['id']) }}</span></td>
+                            <td>
+                                <strong>{{ loan['customer_name'] }}</strong>
+                                <small>📱 {{ loan['mobile'] or 'মোবাইল দেয়া নেই' }}</small>
+                            </td>
+                            <td>
+                                <span class="pawn-badge">22K Gold</span>
+                                <div>{{ loan['item_details'] }}</div>
+                                <small>⚖️ {{ loan['weight'] or 0 }} গ্রাম</small>
+                            </td>
+                            <td>
+                                <strong class="money">BDT {{ "%.2f"|format(loan['amount'] or 0) }} Taka</strong>
+                            </td>
+                            <td>
+                                <div style="color: #b45309; font-weight: bold;">
+                                    BDT {{ "%.2f"|format((loan['amount'] or 0) * (loan['interest_rate'] or 0) / 100) }}
+                                </div>
+                                <small>১ মাস @ {{ loan['interest_rate'] or 0 }}%</small>
+                            </td>
+                            <td>
+                                <span class="pawn-status">{{ loan['status'] or 'চলতি' }}</span>
+                            </td>
+                            <td class="action-btns">
+                                <button type="button" class="btn-pay" onclick="alert('সুদ আদায় এন্ট্রি নেওয়া হয়েছে!')">সুদ নিন</button>
+                                <button type="button" class="btn-release" onclick="alert('বন্ধকি পণ্য খালাস সম্পন্ন!')">খালাস</button>
+                                <a class="btn-receipt" href="{{ url_for('loan_voucher', voucher_id=loan['voucher_id'] or loan['id']) }}">রসিদ ও হিসাব</a>
+                                <button type="button" class="btn-wa" onclick="window.open('https://wa.me/88{{ loan['mobile'] }}', '_blank')">WhatsApp</button>
+                                <form action="{{ url_for('delete_loan', loan_id=loan['id']) }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete this pawn loan entry?');">
+                                    <button type="submit" class="btn-del">মুছুন</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td class="empty-record" colspan="7">এখনও কোনো বন্ধকি ঋণ রসিদ নেই। বাম পাশের ফর্ম থেকে নতুন এন্ট্রি দিন।</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function setCarat(carat) {
+    document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    const itemInput = document.getElementById('item_details');
+    if (itemInput.value.indexOf('K') === -1 && itemInput.value.trim() !== '') {
+        itemInput.value = carat + ' ' + itemInput.value;
+    }
+}
+
+function updateBadge(val) {
+    const num = parseFloat(val) || 0;
+    document.getElementById('badge_amt').innerText = num.toLocaleString('en-IN');
+}
+
+function gramToBhori(gram) {
+    const g = parseFloat(gram) || 0;
+    const totalBhori = g / 11.664;
+    const bhori = Math.floor(totalBhori);
+    const remAna = (totalBhori - bhori) * 16;
+    const ana = Math.floor(remAna);
+    const remRoti = (remAna - ana) * 6;
+    const roti = Math.floor(remRoti);
+    const point = Math.round((remRoti - roti) * 10);
+
+    document.getElementById('w_bhori').value = bhori || '';
+    document.getElementById('w_ana').value = ana || '';
+    document.getElementById('w_roti').value = roti || '';
+    document.getElementById('w_point').value = point || '';
+}
+
+function bhoriToGram() {
+    const bh = parseFloat(document.getElementById('w_bhori').value) || 0;
+    const an = parseFloat(document.getElementById('w_ana').value) || 0;
+    const ro = parseFloat(document.getElementById('w_roti').value) || 0;
+    const pt = parseFloat(document.getElementById('w_point').value) || 0;
+
+    const totalBhori = bh + (an / 16) + (ro / 96) + (pt / 960);
+    const gram = totalBhori * 11.664;
+    document.getElementById('gram_weight').value = gram ? gram.toFixed(3) : '';
+}
+
+function filterLoans(query) {
+    const text = query.toLowerCase();
+    document.querySelectorAll('[data-loan-row]').forEach((row) => {
+        row.style.display = row.innerText.toLowerCase().includes(text) ? '' : 'none';
+    });
+}
+
+function filterByStatus(status) {
+    document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    document.querySelectorAll('[data-loan-row]').forEach((row) => {
+        if (status === 'all') {
+            row.style.display = '';
+        } else {
+            const rowStatus = row.getAttribute('data-status');
+            row.style.display = (rowStatus === status || status === 'active') ? '' : 'none';
+        }
+    });
+}
+</script>
+{% endblock %}
