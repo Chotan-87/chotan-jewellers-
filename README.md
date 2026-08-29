@@ -1,2 +1,2 @@
 # chotan-jewellers
-I learning test project phyton
+I have a phyton learning test project 
