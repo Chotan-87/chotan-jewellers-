@@ -47,9 +47,9 @@ class AmineJewellersTestCase(unittest.TestCase):
         ), follow_redirects=True)
         self.assertEqual(add_res.status_code, 200)
 
-        conn = get_db()
-        cust = conn.execute("SELECT id FROM customers WHERE name='Test User'").fetchone()
-        conn.close()
+        with app.app_context():
+            conn = get_db()
+            cust = conn.execute("SELECT id FROM customers WHERE name='Test User'").fetchone()
         self.assertIsNotNone(cust)
 
         del_res = self.client.get(f'/customer/delete/{cust["id"]}', follow_redirects=True)
@@ -63,9 +63,9 @@ class AmineJewellersTestCase(unittest.TestCase):
         ), follow_redirects=True)
         self.assertEqual(add_res.status_code, 200)
 
-        conn = get_db()
-        stock = conn.execute("SELECT id FROM gold_stock WHERE item_name='Gold Chain'").fetchone()
-        conn.close()
+        with app.app_context():
+            conn = get_db()
+            stock = conn.execute("SELECT id FROM gold_stock WHERE item_name='Gold Chain'").fetchone()
         self.assertIsNotNone(stock)
 
         del_res = self.client.get(f'/gold-stock/delete/{stock["id"]}', follow_redirects=True)
@@ -80,9 +80,9 @@ class AmineJewellersTestCase(unittest.TestCase):
         ), follow_redirects=True)
         self.assertEqual(add_res.status_code, 200)
 
-        conn = get_db()
-        loan = conn.execute("SELECT id, voucher_id FROM loans WHERE customer_name='Loan Client'").fetchone()
-        conn.close()
+        with app.app_context():
+            conn = get_db()
+            loan = conn.execute("SELECT id, voucher_id FROM loans WHERE customer_name='Loan Client'").fetchone()
         self.assertIsNotNone(loan)
 
         voucher_res = self.client.get(f'/loan-voucher/{loan["voucher_id"]}')
@@ -101,10 +101,22 @@ class AmineJewellersTestCase(unittest.TestCase):
         ), follow_redirects=True)
         self.assertEqual(add_res.status_code, 200)
 
-        conn = get_db()
-        order = conn.execute("SELECT id FROM buy_orders WHERE customer_name='Buyer'").fetchone()
-        conn.close()
+        with app.app_context():
+            conn = get_db()
+            order = conn.execute("SELECT id FROM buy_orders WHERE customer_name='Buyer' ORDER BY id DESC").fetchone()
         self.assertIsNotNone(order)
+
+        # Test Kisti Payment
+        pay_res = self.client.post(f'/buy-now/payment/{order["id"]}', data=dict(
+            amount=20000, payment_date='2026-09-12', note='1st installment'
+        ), follow_redirects=True)
+        self.assertEqual(pay_res.status_code, 200)
+
+        with app.app_context():
+            conn = get_db()
+            payment = conn.execute("SELECT id, amount FROM order_payments WHERE order_id = ? ORDER BY id DESC", (order["id"],)).fetchone()
+        self.assertIsNotNone(payment)
+        self.assertEqual(payment["amount"], 20000)
 
         del_res = self.client.get(f'/buy-now/delete/{order["id"]}', follow_redirects=True)
         self.assertEqual(del_res.status_code, 200)

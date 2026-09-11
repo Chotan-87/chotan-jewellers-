@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Gold Rates | The Amin Jewellers{% endblock %}
+
+{% block extra_head %}
+<style>
+    .rate-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px 24px; max-width: 500px; }
+    .rate-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .rate-row label { width: 80px; font-weight: 700; color: #374151; font-size: 15px; }
+    .rate-row input { flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 15px; }
+    .karat-badge { background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+    .success-msg { background: #dcfce7; color: #166534; border: 1px solid #86efac; padding: 10px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: 600; }
+    .current-rates { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 24px; max-width: 500px; }
+    .rate-display { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 16px; text-align: center; }
+    .rate-display .karat { font-weight: 800; font-size: 18px; color: #1f2937; }
+    .rate-display .rate { color: #b45309; font-size: 16px; font-weight: 700; margin-top: 4px; }
+    .rate-display small { color: #6b7280; font-size: 11px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>?? Gold Rates</h1>
+<p style="color:#6b7280; margin-bottom:20px;">Update today's gold rates per bhori (???). These rates are used by the Calculator.</p>
+
+<div class="current-rates">
+    {% for r in rates %}
+    <div class="rate-display">
+        <div class="karat">{{ r['karat'] }}</div>
+        <div class="rate">? {{ "{:,.0f}".format(r['rate']) }}</div>
+        <small>per bhori</small>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="rate-card">
+    <h3 style="margin-bottom:16px; color:#1f2937;">?? Update Rates</h3>
+
+    {% if message %}
+    <div class="success-msg">? {{ message }}</div>
+    {% endif %}
+
+    <form method="POST">
+        {% for r in rates %}
+        <div class="rate-row">
+            <label><span class="karat-badge">{{ r['karat'] }}</span></label>
+            <input type="number" name="rate_{{ r['karat'] }}" value="{{ r['rate']|int }}" placeholder="Rate per bhori" min="0" step="1" required>
+        </div>
+        {% endfor %}
+        <button type="submit" style="background:#1e1b4b; color:#fff; border:none; padding:10px 24px; border-radius:6px; font-size:14px; font-weight:700; cursor:pointer; width:100%; margin-top:8px;">
+            ?? Save Rates
+        </button>
+    </form>
+</div>
+{% endblock %}

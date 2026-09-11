@@ -14,19 +14,18 @@ DATABASE = Path(__file__).with_name("database.db")
 # =========================
 # DATABASE CONNECTION
 # =========================
+@app.teardown_appcontext
+def close_db(exception=None):
+    db = g.pop("db", None)
+    if db is not None:
+        db.close()
+
 
 def get_db():
     if "db" not in g:
         g.db = sqlite3.connect(DATABASE)
         g.db.row_factory = sqlite3.Row
     return g.db
-
-
-@app.teardown_appcontext
-def close_db(exception=None):
-    db = g.pop("db", None)
-    if db is not None:
-        db.close()
 
 
 # =========================
@@ -56,9 +55,14 @@ def create_tables(conn):
     conn.execute("""
         CREATE TABLE IF NOT EXISTS gold_stock (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            serial_no TEXT,
             item_name TEXT NOT NULL,
             karat TEXT NOT NULL,
             weight REAL NOT NULL,
+            bhori REAL DEFAULT 0,
+            ana REAL DEFAULT 0,
+            rati REAL DEFAULT 0,
+            point REAL DEFAULT 0,
             quantity INTEGER NOT NULL,
             purchase_rate REAL NOT NULL,
             total_value REAL NOT NULL,
@@ -117,12 +121,27 @@ def create_tables(conn):
             grade TEXT NOT NULL,
             bhori_weight REAL NOT NULL DEFAULT 0,
             ana_weight REAL NOT NULL DEFAULT 0,
+            rati_weight REAL NOT NULL DEFAULT 0,
+            point_weight REAL NOT NULL DEFAULT 0,
+            total_weight_gram REAL NOT NULL DEFAULT 0,
             estimated_price REAL NOT NULL DEFAULT 0,
             advance_paid REAL NOT NULL DEFAULT 0,
             delivery_date TEXT,
             special_requests TEXT,
             status TEXT NOT NULL DEFAULT 'Pending',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS order_payments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id INTEGER NOT NULL,
+            amount REAL NOT NULL,
+            payment_date TEXT DEFAULT (DATE('now', 'localtime')),
+            note TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (order_id) REFERENCES buy_orders(id) ON DELETE CASCADE
         )
     """)
 
@@ -135,6 +154,34 @@ def run_migrations(conn):
     stock_columns = {row["name"] for row in conn.execute("PRAGMA table_info(gold_stock)")}
     if "serial_no" not in stock_columns:
         conn.execute("ALTER TABLE gold_stock ADD COLUMN serial_no TEXT")
+    if "bhori" not in stock_columns:
+        conn.execute("ALTER TABLE gold_stock ADD COLUMN bhori REAL DEFAULT 0")
+    if "ana" not in stock_columns:
+        conn.execute("ALTER TABLE gold_stock ADD COLUMN ana REAL DEFAULT 0")
+    if "rati" not in stock_columns:
+        conn.execute("ALTER TABLE gold_stock ADD COLUMN rati REAL DEFAULT 0")
+    if "point" not in stock_columns:
+        conn.execute("ALTER TABLE gold_stock ADD COLUMN point REAL DEFAULT 0")
+
+    order_columns = {row["name"] for row in conn.execute("PRAGMA table_info(buy_orders)")}
+    if "rati_weight" not in order_columns:
+        conn.execute("ALTER TABLE buy_orders ADD COLUMN rati_weight REAL NOT NULL DEFAULT 0")
+    if "point_weight" not in order_columns:
+        conn.execute("ALTER TABLE buy_orders ADD COLUMN point_weight REAL NOT NULL DEFAULT 0")
+    if "total_weight_gram" not in order_columns:
+        conn.execute("ALTER TABLE buy_orders ADD COLUMN total_weight_gram REAL NOT NULL DEFAULT 0")
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS order_payments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id INTEGER NOT NULL,
+            amount REAL NOT NULL,
+            payment_date TEXT DEFAULT (DATE('now', 'localtime')),
+            note TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (order_id) REFERENCES buy_orders(id) ON DELETE CASCADE
+        )
+    """)
 
 
 def seed_default_rates(conn):
@@ -316,6 +363,75 @@ def delete_customer(customer_id):
 
 
 # =========================
+# EDIT CUSTOMER
+# =========================
+
+@app.route("/customer/edit/<int:customer_id>", methods=["POST"])
+@login_required
+def edit_customer(customer_id):
+    name    = request.form.get("name",    "").strip()
+    mobile  = request.form.get("mobile",  "").strip()
+    address = request.form.get("address", "").strip()
+    age     = request.form.get("age",     "").strip() or None
+
+    if not name or not mobile:
+        return redirect(url_for("customers"))
+
+    conn = get_db()
+    conn.execute("""
+        UPDATE customers
+        SET name = ?, mobile = ?, address = ?, age = ?
+        WHERE id = ?
+    """, (name, mobile, address, age, customer_id))
+    conn.commit()
+    return redirect(url_for("customers"))
+
+
+# =========================
+# CUSTOMER PROFILE
+# =========================
+
+@app.route("/customer/<int:customer_id>")
+@login_required
+def customer_profile(customer_id):
+    conn = get_db()
+    customer = conn.execute(
+        "SELECT * FROM customers WHERE id = ?", (customer_id,)
+    ).fetchone()
+
+    if customer is None:
+        return redirect(url_for("customers"))
+
+    invoices = conn.execute("""
+        SELECT * FROM invoices
+        WHERE customer_name = ?
+        ORDER BY id DESC
+        LIMIT 10
+    """, (customer["name"],)).fetchall()
+
+    loans = conn.execute("""
+        SELECT * FROM loans
+        WHERE customer_name = ?
+        ORDER BY id DESC
+        LIMIT 10
+    """, (customer["name"],)).fetchall()
+
+    total_spent = conn.execute("""
+        SELECT COALESCE(SUM(grand_total), 0)
+        FROM invoices
+        WHERE customer_name = ?
+    """, (customer["name"],)).fetchone()[0]
+
+    return render_template(
+        "customer_profile.html",
+        customer=customer,
+        invoices=invoices,
+        loans=loans,
+        total_spent=total_spent,
+    )
+
+
+# =========================
 # GOLD STOCK
 # =========================
 
@@ -330,17 +446,42 @@ def gold_stock():
         serial_no = request.form.get("serial_no", "").strip()
 
         try:
-            weight = float(request.form.get("weight") or 0)
-            quantity = int(request.form.get("quantity") or 0)
+            bhori = float(request.form.get("bhori") or 0)
+            ana = float(request.form.get("ana") or 0)
+            rati = float(request.form.get("rati") or 0)
+            point = float(request.form.get("point") or 0)
+        except ValueError:
+            bhori = ana = rati = point = 0
+
+        # Calculate weight in grams: 1 vari = 16 ana = 96 rati = 576 point = 11.664 gram
+        # Check if direct weight in gram was supplied or calculated from vari/anna/rati/point
+        raw_gram = request.form.get("weight")
+        if raw_gram and float(raw_gram) > 0 and (bhori == 0 and ana == 0 and rati == 0 and point == 0):
+            weight = float(raw_gram)
+            # Reverse calculate approximate bhori/ana for display
+            total_bhori = weight / 11.664
+            bhori = float(int(total_bhori))
+            rem_ana = (total_bhori - bhori) * 16
+            ana = float(int(rem_ana))
+            rem_rati = (rem_ana - ana) * 6
+            rati = float(int(rem_rati))
+            point = round((rem_rati - rati) * 6, 1)
+        else:
+            total_bhori = bhori + (ana / 16.0) + (rati / 96.0) + (point / 576.0)
+            weight = round(total_bhori * 11.664, 4)
+
+        try:
+            quantity = int(request.form.get("quantity") or 1)
             purchase_rate = float(request.form.get("purchase_rate") or 0)
         except ValueError:
-            weight = quantity = purchase_rate = 0
+            quantity = 1
+            purchase_rate = 0
 
         total_value = weight * quantity * purchase_rate
 
         if not serial_no:
             count = conn.execute("SELECT COUNT(*) FROM gold_stock").fetchone()[0] + 1
-            serial_no = f"GS-2026-{count:04d}"
+            serial_no = f"QS-2026-{count:04d}"
 
         if item_name and karat and weight > 0 and quantity > 0:
             conn.execute("""
@@ -349,16 +490,24 @@ def gold_stock():
                     item_name,
                     karat,
                     weight,
+                    bhori,
+                    ana,
+                    rati,
+                    point,
                     quantity,
                     purchase_rate,
                     total_value
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 serial_no,
                 item_name,
                 karat,
                 weight,
+                bhori,
+                ana,
+                rati,
+                point,
                 quantity,
                 purchase_rate,
                 total_value
@@ -509,44 +658,140 @@ def buy_now():
     conn = get_db()
 
     if request.method == "POST":
-        customer_name = request.form.get("customer_name", "").strip()
-        mobile = request.form.get("mobile", "").strip()
-        item_details = request.form.get("item_details", "").strip()
-        grade = request.form.get("grade", "22K Gold").strip()
-        delivery_date = request.form.get("delivery_date", "").strip()
+        customer_name   = request.form.get("customer_name",   "").strip()
+        mobile          = request.form.get("mobile",          "").strip()
+        item_details    = request.form.get("item_details",    "").strip()
+        grade           = request.form.get("grade", "22K Gold").strip()
+        delivery_date   = request.form.get("delivery_date",   "").strip()
         special_requests = request.form.get("special_requests", "").strip()
 
         try:
-            bhori_weight = float(request.form.get("bhori_weight") or 0)
-            ana_weight = float(request.form.get("ana_weight") or 0)
+            bhori_weight   = float(request.form.get("bhori_weight")  or 0)
+            ana_weight     = float(request.form.get("ana_weight")    or 0)
+            rati_weight    = float(request.form.get("rati_weight")   or 0)
+            point_weight   = float(request.form.get("point_weight")  or 0)
             estimated_price = float(request.form.get("estimated_price") or 0)
-            advance_paid = float(request.form.get("advance_paid") or 0)
+            advance_paid   = float(request.form.get("advance_paid")  or 0)
         except ValueError:
-            bhori_weight = ana_weight = estimated_price = advance_paid = 0
+            bhori_weight = ana_weight = rati_weight = point_weight = estimated_price = advance_paid = 0
+
+        # ভরি → গ্রাম রূপান্তর
+        # 1 ভরি = 16 আনা = 96 রতি = 576 পয়েন্ট = 11.664 গ্রাম
+        total_bhori = (
+            bhori_weight
+            + ana_weight   / 16
+            + rati_weight  / 96
+            + point_weight / 576
+        )
+        total_weight_gram = round(total_bhori * 11.664, 4)
 
         if customer_name and item_details and estimated_price >= 0 and advance_paid >= 0:
             conn.execute("""
                 INSERT INTO buy_orders (
-                    customer_name, mobile, item_details, grade, bhori_weight,
-                    ana_weight, estimated_price, advance_paid, delivery_date,
+                    customer_name, mobile, item_details, grade,
+                    bhori_weight, ana_weight, rati_weight, point_weight,
+                    total_weight_gram,
+                    estimated_price, advance_paid, delivery_date,
                     special_requests
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                customer_name, mobile, item_details, grade, bhori_weight,
-                ana_weight, estimated_price, advance_paid, delivery_date,
+                customer_name, mobile, item_details, grade,
+                bhori_weight, ana_weight, rati_weight, point_weight,
+                total_weight_gram,
+                estimated_price, advance_paid, delivery_date,
                 special_requests
             ))
             conn.commit()
             return redirect(url_for("buy_now"))
 
-    orders = conn.execute("SELECT * FROM buy_orders ORDER BY id DESC").fetchall()
+
+    orders_raw = conn.execute("SELECT * FROM buy_orders ORDER BY id DESC").fetchall()
+    orders = []
+    for row in orders_raw:
+        od = dict(row)
+        payments = conn.execute(
+            "SELECT * FROM order_payments WHERE order_id = ? ORDER BY id ASC",
+            (od["id"],)
+        ).fetchall()
+        installment_sum = sum(p["amount"] for p in payments)
+        od["payments"] = payments
+        od["installment_sum"] = installment_sum
+        od["total_paid"] = od["advance_paid"] + installment_sum
+        od["due_amount"] = max(0.0, od["estimated_price"] - od["total_paid"])
+        orders.append(od)
+
     return render_template("buy_now.html", orders=orders)
+
+
+@app.route("/buy-now/payment/<int:order_id>", methods=["POST"])
+@login_required
+def add_order_payment(order_id):
+    conn = get_db()
+    order = conn.execute("SELECT * FROM buy_orders WHERE id = ?", (order_id,)).fetchone()
+    if not order:
+        return redirect(url_for("buy_now"))
+
+    try:
+        amount = float(request.form.get("amount") or 0)
+    except ValueError:
+        amount = 0
+
+    payment_date = request.form.get("payment_date", "").strip()
+    note = request.form.get("note", "").strip()
+
+    if amount > 0:
+        if payment_date:
+            conn.execute("""
+                INSERT INTO order_payments (order_id, amount, payment_date, note)
+                VALUES (?, ?, ?, ?)
+            """, (order_id, amount, payment_date, note))
+        else:
+            conn.execute("""
+                INSERT INTO order_payments (order_id, amount, note)
+                VALUES (?, ?, ?)
+            """, (order_id, amount, note))
+
+        # Check if fully paid, update status to Completed if requested or fully paid
+        all_payments = conn.execute(
+            "SELECT COALESCE(SUM(amount), 0) FROM order_payments WHERE order_id = ?",
+            (order_id,)
+        ).fetchone()[0]
+        total_paid = order["advance_paid"] + all_payments
+        if total_paid >= order["estimated_price"]:
+            conn.execute("UPDATE buy_orders SET status = 'Completed' WHERE id = ?", (order_id,))
+
+        conn.commit()
+
+    return redirect(url_for("buy_now"))
+
+
+@app.route("/buy-now/payment/delete/<int:payment_id>", methods=["POST"])
+@login_required
+def delete_order_payment(payment_id):
+    conn = get_db()
+    payment = conn.execute("SELECT * FROM order_payments WHERE id = ?", (payment_id,)).fetchone()
+    if payment:
+        order_id = payment["order_id"]
+        conn.execute("DELETE FROM order_payments WHERE id = ?", (payment_id,))
+        # Re-check status
+        order = conn.execute("SELECT * FROM buy_orders WHERE id = ?", (order_id,)).fetchone()
+        if order:
+            all_payments = conn.execute(
+                "SELECT COALESCE(SUM(amount), 0) FROM order_payments WHERE order_id = ?",
+                (order_id,)
+            ).fetchone()[0]
+            total_paid = order["advance_paid"] + all_payments
+            if total_paid < order["estimated_price"] and order["status"] == "Completed":
+                conn.execute("UPDATE buy_orders SET status = 'Pending' WHERE id = ?", (order_id,))
+        conn.commit()
+    return redirect(url_for("buy_now"))
 
 
 @app.route("/buy-now/delete/<int:order_id>", methods=["GET", "POST"])
 @login_required
 def delete_buy_order(order_id):
     conn = get_db()
+    conn.execute("DELETE FROM order_payments WHERE order_id = ?", (order_id,))
     conn.execute("DELETE FROM buy_orders WHERE id = ?", (order_id,))
     conn.commit()
     return redirect(url_for("buy_now"))
@@ -681,6 +926,108 @@ def invoices():
 
 
 # =========================
+# GOLD SALE / RATE UPDATE
+# =========================
+
+@app.route("/gold-sale", methods=["GET", "POST"])
+@login_required
+def gold_sale():
+    conn = get_db()
+    message = None
+
+    if request.method == "POST":
+        for karat in ["24K", "22K", "21K", "18K"]:
+            rate_val = request.form.get(f"rate_{karat}", "").strip()
+            if rate_val:
+                try:
+                    conn.execute(
+                        "UPDATE gold_rates SET rate = ? WHERE karat = ?",
+                        (float(rate_val), karat)
+                    )
+                except ValueError:
+                    pass
+        conn.commit()
+        message = "Gold rates updated successfully!"
+
+    rates = conn.execute("SELECT karat, rate FROM gold_rates ORDER BY karat DESC").fetchall()
+    return render_template("gold_sale.html", rates=rates, message=message)
+
+
+# =========================
+# REPORTS
+# =========================
+
+@app.route("/reports")
+@login_required
+def reports():
+    conn = get_db()
+
+    total_sales = conn.execute(
+        "SELECT COALESCE(SUM(grand_total), 0) FROM invoices"
+    ).fetchone()[0]
+
+    total_invoices = conn.execute(
+        "SELECT COUNT(*) FROM invoices"
+    ).fetchone()[0]
+
+    monthly_sales = conn.execute("""
+        SELECT strftime('%Y-%m', created_at) AS month,
+               COUNT(*) AS count,
+               COALESCE(SUM(grand_total), 0) AS total
+        FROM invoices
+        GROUP BY month
+        ORDER BY month DESC
+        LIMIT 12
+    """).fetchall()
+
+    active_loans = conn.execute(
+        "SELECT COALESCE(SUM(amount), 0) FROM loans WHERE status = 'Active'"
+    ).fetchone()[0]
+
+    pending_orders = conn.execute(
+        "SELECT COUNT(*) FROM buy_orders WHERE status = 'Pending'"
+    ).fetchone()[0]
+
+    return render_template(
+        "reports.html",
+        total_sales=total_sales,
+        total_invoices=total_invoices,
+        monthly_sales=monthly_sales,
+        active_loans=active_loans,
+        pending_orders=pending_orders
+    )
+
+
+# =========================
+# SETTINGS
+# =========================
+
+@app.route("/settings", methods=["GET", "POST"])
+@login_required
+def settings():
+    message = None
+    error = None
+
+    if request.method == "POST":
+        current_pw = request.form.get("current_password", "")
+        new_pw = request.form.get("new_password", "").strip()
+        confirm_pw = request.form.get("confirm_password", "").strip()
+
+        if current_pw != "1234":
+            error = "Current password is incorrect."
+        elif not new_pw or len(new_pw) < 4:
+            error = "New password must be at least 4 characters."
+        elif new_pw != confirm_pw:
+            error = "Passwords do not match."
+        else:
+            # In production, store hashed passwords in DB.
+            # For now we just confirm success (stateless demo).
+            message = "Password changed successfully! Please restart the app to apply."
+
+    return render_template("settings.html", message=message, error=error)
+
+
+# =========================
 # LOGOUT
 # =========================
 
@@ -688,6 +1035,7 @@ def invoices():
 def logout():
     session.clear()
     return redirect("/")
+
 
 
 # =========================

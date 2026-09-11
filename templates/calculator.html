@@ -93,10 +93,10 @@
             <div class="form-group">
                 <label>স্বর্ণের ধরন (ক্যারেট)</label>
                 <select class="form-select" name="karat" id="karat_select" onchange="calculateLive()" required>
-                    <option value="22K" data-rate="125400">22 Carat Gold (৳১,২৫,৪০০)</option>
-                    <option value="24K" data-rate="136800">24 Carat Gold (৳১,৩৬,৮০০)</option>
-                    <option value="21K" data-rate="119700">21 Carat Gold (৳১,১৯,৭০০)</option>
-                    <option value="18K" data-rate="102600">18 Carat Gold (৳১,০২,৬০০)</option>
+                    <option value="22K" data-rate="125400">22 Carat Gold (৳2,২৫,000)</option>
+                    <option value="24K" data-rate="136800">24 Carat Gold (৳2,৩৬,000)</option>
+                    <option value="21K" data-rate="119700">21 Carat Gold (৳2,১৯,000)</option>
+                    <option value="18K" data-rate="102600">18 Carat Gold (৳১,80,000)</option>
                 </select>
             </div>
 
@@ -147,9 +147,9 @@
 
             <input type="hidden" name="customer_name" value="সাধারণ কাস্টমার">
             <input type="hidden" name="mobile" value="">
-            <input type="hidden" name="rate" id="hidden_rate" value="125400">
+            <input type="hidden" name="rate" id="hidden_rate" value="225400">
             <input type="hidden" name="gold_value" id="hidden_gold_val">
-            <input type="hidden" name="bat" value="0">
+            <input type="hidden" name="vat" value="0">
             <input type="hidden" name="stone" value="0">
             <input type="hidden" name="grand_total" id="hidden_grand_total">
         </form>
@@ -173,7 +173,7 @@
         <div class="summary-row">
             <span>স্বর্ণের ক্যারেট দর:</span>
             <div class="val">
-                <span id="sum_rate">BDT ১,২৫,৪০০</span>
+                <span id="sum_rate">BDT 2,২৫,000</span>
                 <span class="sub-val">Taka / ভরি</span>
             </div>
         </div>
@@ -181,7 +181,7 @@
         <div class="summary-row">
             <span>মূল স্বর্ণের দাম:</span>
             <div class="val">
-                <span id="sum_gold_val">BDT ১,২৫,৪০০</span>
+                <span id="sum_gold_val">BDT 2,২৫,000</span>
                 <span class="sub-val">Taka</span>
             </div>
         </div>
@@ -189,7 +189,7 @@
         <div class="summary-row gold-highlight">
             <span>অপচয় / ওয়েস্টেজ (<span id="sum_wastage_pct">5</span>%):</span>
             <div class="val" style="color: #ca8a04;">
-                <span id="sum_wastage_val">BDT ৬,২৭০</span>
+                <span id="sum_wastage_val">BDT 0,00</span>
                 <span class="sub-val" style="color: #ca8a04;">Taka</span>
             </div>
         </div>
@@ -197,14 +197,14 @@
         <div class="summary-row">
             <span>গহনা বানানোর মজুরি:</span>
             <div class="val">
-                <span id="sum_making">BDT ৩,০০০</span>
+                <span id="sum_making">BDT 000</span>
                 <span class="sub-val">Taka</span>
             </div>
         </div>
 
         <div class="total-banner">
             <small>সর্বমোট প্রদেয় মূল্য</small>
-            <h1 id="sum_total">৳ ১,৪১,৬৭০</h1>
+            <h1 id="sum_total">৳ 0,00</h1>
         </div>
 
         <button type="button" class="btn-add-memo" onclick="document.getElementById('calcForm').submit();">
@@ -250,7 +250,7 @@ function fromGram() {
 
 function calculateLive() {
     const sel = document.getElementById('karat_select');
-    const rate = parseFloat(sel.options[sel.selectedIndex].getAttribute('data-rate')) || 125400;
+    const rate = parseFloat(sel.options[sel.selectedIndex].getAttribute('data-rate')) || 225000;
     const gram = parseFloat(document.getElementById('gram_input').value) || 0;
     const wastagePct = parseFloat(document.getElementById('wastage').value) || 0;
     const making = parseFloat(document.getElementById('making').value) || 0;

@@ -1,62 +1,496 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>অর্ডার খাতা | The Amin Jewellers</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body class="order-page">
-<main class="order-workspace">
-    <header class="order-titlebar">
-        <div><p class="eyebrow">✥ THE AMIN JEWELLERS</p><h1>অর্ডার খাতা - নতুন অলংকার তৈরির অর্ডার এন্ট্রি</h1></div>
-        <a href="/dashboard">ড্যাশবোর্ডে ফিরুন</a>
-    </header>
+﻿{% extends "base.html" %}
+{% block title %}অর্ডার খাতা | The Amin Jewellers{% endblock %}
 
-    <section class="order-form-card">
-        <div class="section-title"><span>＋</span><h2>নতুন অলংকার অর্ডার</h2></div>
-        <form method="POST" action="/buy-now" class="order-form">
-            <div class="order-three-col">
-                <label>গ্রাহকের নাম (Customer Name) <b>*</b><input name="customer_name" placeholder="যেমন: মোস্তাফিজা হোসেন" required></label>
-                <label>মোবাইল নম্বর (Phone)<input name="mobile" placeholder="e.g. 01711223344"></label>
-                <label>তৈরির বিবরণ (Item Details) <b>*</b><input name="item_details" placeholder="যেমন: ৩ ভরি ২ আনা ওজনের গোল্ড চেইন" required></label>
-                <label>ক্যারেট (Grade)<select name="grade"><option>22K Gold</option><option>21K Gold</option><option>18K Gold</option><option>24K Gold</option></select></label>
-                <label>ভরি ওজন (Bhori Weight)<input type="number" name="bhori_weight" min="0" step="0.001" value="0"></label>
-                <label>আনা ওজন (Ana Weight)<input type="number" name="ana_weight" min="0" step="0.001" value="0"></label>
-                <label>মোট আনুমানিক মূল্য (Est Price)<input type="number" name="estimated_price" min="0" step="0.01" value="0"></label>
-                <label>অগ্রিম প্রদত্ত মূল্য (Advance Paid)<input type="number" name="advance_paid" min="0" step="0.01" value="0"></label>
-                <label>ডেলিভারি তারিখ (Delivery Date)<input type="date" name="delivery_date"></label>
+{% block extra_head %}
+<style>
+/* ── Page ── */
+.ord-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+.ord-header h1 { margin:0; font-size:21px; color:#1f2937; }
+.ord-header p  { margin:4px 0 0; font-size:12px; color:#9ca3af; }
+.ord-count { background:#1e1b4b; color:#fff; border-radius:20px; padding:6px 16px; font-size:13px; font-weight:700; }
+
+/* ── Form card ── */
+.form-card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:24px; margin-bottom:22px; }
+.form-card h2 { font-size:15px; font-weight:800; color:#1e1b4b; margin:0 0 18px; display:flex; align-items:center; gap:8px; }
+.form-section-label { font-size:11px; font-weight:800; color:#6b7280; text-transform:uppercase; letter-spacing:.8px; margin:16px 0 10px; padding-bottom:6px; border-bottom:1px solid #f3f4f6; }
+.fg  { display:flex; flex-direction:column; gap:5px; }
+.fg label { font-size:12px; font-weight:700; color:#374151; }
+.fg input, .fg select, .fg textarea { padding:9px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; width:100%; box-sizing:border-box; }
+.fg input:focus, .fg select:focus, .fg textarea:focus { outline:none; border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,.12); }
+.fg textarea { resize:vertical; min-height:70px; }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+.grid-4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px; }
+
+/* Weight box */
+.weight-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.weight-box { background:#fafafa; border:1px solid #e5e7eb; border-radius:10px; padding:12px 10px 10px; position:relative; }
+.weight-box .unit-label { font-size:10px; font-weight:800; color:#6366f1; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; display:block; }
+.weight-box .bn-label  { font-size:11px; color:#9ca3af; margin-top:4px; text-align:center; display:block; }
+.weight-box input { border:none; border-bottom:2px solid #e5e7eb; border-radius:0; padding:6px 4px; font-size:22px; font-weight:800; color:#1e1b4b; text-align:center; background:transparent; width:100%; box-sizing:border-box; }
+.weight-box input:focus { outline:none; border-bottom-color:#6366f1; }
+
+/* Live calc bar */
+.weight-result { background:linear-gradient(135deg,#1e1b4b,#312e81); color:#fff; border-radius:10px; padding:12px 18px; margin-top:12px; display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+.wr-item .lbl { font-size:10px; opacity:.7; text-transform:uppercase; }
+.wr-item .val { font-size:17px; font-weight:800; }
+
+/* Price row */
+.price-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.due-preview { background:#fef3c7; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; margin-top:12px; }
+.due-preview .lbl { font-size:12px; color:#92400e; font-weight:700; }
+.due-preview .val { font-size:18px; font-weight:800; color:#92400e; }
+
+/* Submit */
+.form-footer { display:flex; justify-content:flex-end; margin-top:18px; }
+.btn-submit { background:#1e1b4b; color:#fff; border:none; padding:12px 32px; border-radius:9px; font-size:14px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:8px; letter-spacing:.3px; }
+.btn-submit:hover { background:#312e81; }
+
+/* ── Orders table ── */
+.orders-card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden; }
+.orders-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #e5e7eb; }
+.orders-head h2 { margin:0; font-size:15px; font-weight:800; color:#1f2937; }
+.table-scroll { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; min-width:980px; }
+thead th { background:#f9fafb; padding:10px 14px; text-align:left; font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
+tbody td { padding:11px 14px; font-size:13px; color:#374151; border-bottom:1px solid #f3f4f6; vertical-align:middle; }
+tbody tr:last-child td { border-bottom:none; }
+tbody tr:hover td { background:#f9fafb; }
+
+/* badges */
+.ord-id { background:#eff6ff; color:#1d4ed8; padding:3px 9px; border-radius:12px; font-size:11px; font-weight:800; }
+.grade-badge { background:#fef3c7; color:#92400e; padding:3px 9px; border-radius:12px; font-size:11px; font-weight:700; }
+.status-pending  { background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; padding:3px 9px; border-radius:12px; font-size:11px; font-weight:700; }
+.status-complete { background:#dcfce7; color:#15803d; border:1px solid #86efac; padding:3px 9px; border-radius:12px; font-size:11px; font-weight:700; }
+.money-green { color:#15803d; font-weight:800; }
+.money-red   { color:#dc2626; font-weight:800; }
+.money-main  { color:#1e1b4b; font-weight:800; }
+
+/* weight display pill */
+.wt-pill { display:inline-flex; flex-wrap:wrap; gap:4px; font-size:12px; }
+.wt-pill span { background:#f3f4f6; color:#374151; padding:2px 7px; border-radius:6px; font-weight:700; }
+.wt-gram { font-size:11px; color:#9ca3af; margin-top:2px; display:block; }
+
+/* action buttons */
+.btn-kisti { background:#16a34a; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; }
+.btn-kisti:hover { background:#15803d; }
+.btn-history { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; }
+.btn-history:hover { background:#dbeafe; }
+.btn-del-row { background:#fef2f2; color:#dc2626; border:1px solid #fca5a5; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; }
+.btn-del-row:hover { background:#fee2e2; }
+
+/* ── Modal ── */
+.modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center; }
+.modal-bg.open { display:flex; }
+.modal { background:#fff; border-radius:14px; padding:24px; width:100%; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,.2); position:relative; max-height:90vh; overflow-y:auto; }
+.modal h3 { margin:0 0 16px; font-size:16px; color:#1f2937; }
+.modal .close-btn { position:absolute; top:14px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:#6b7280; line-height:1; }
+.modal-info-box { background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:12px; margin-bottom:16px; font-size:13px; line-height:1.6; }
+.modal-info-box .hl { font-weight:800; color:#1e1b4b; }
+.kisti-table { width:100%; border-collapse:collapse; margin-top:10px; }
+.kisti-table th { background:#f3f4f6; padding:7px 10px; font-size:11px; text-align:left; border-bottom:1px solid #e5e7eb; }
+.kisti-table td { padding:7px 10px; font-size:12px; border-bottom:1px solid #f3f4f6; }
+.btn-kisti-del { background:none; border:none; color:#dc2626; cursor:pointer; font-size:13px; font-weight:bold; }
+.empty-state { text-align:center; padding:40px; color:#9ca3af; font-size:13px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HEADER -->
+<div class="ord-header">
+  <div>
+    <h1>🛍️ অর্ডার খাতা</h1>
+    <p>নতুন অলংকার তৈরির অর্ডার ও কিস্তি জমা এন্ট্রি — The Amin Jewellers</p>
+  </div>
+  <span class="ord-count">📋 {{ orders|length }} টি অর্ডার</span>
+</div>
+
+<!-- FORM CARD -->
+<div class="form-card">
+  <h2>➕ নতুন অলংকার অর্ডার</h2>
+
+  <form method="POST" action="{{ url_for('buy_now') }}" id="orderForm">
+
+    <!-- Customer Info -->
+    <div class="form-section-label">গ্রাহকের তথ্য</div>
+    <div class="grid-3">
+      <div class="fg">
+        <label>গ্রাহকের নাম (Customer Name) <b style="color:red">*</b></label>
+        <input name="customer_name" placeholder="যেমন: মোস্তাফিজা হোসেন" required>
+      </div>
+      <div class="fg">
+        <label>মোবাইল নম্বর (Phone)</label>
+        <input name="mobile" placeholder="01711223344">
+      </div>
+      <div class="fg">
+        <label>অলংকারের বিবরণ (Item Details) <b style="color:red">*</b></label>
+        <input name="item_details" placeholder="যেমন: গোল্ড চেইন, নেকলেস, আংটি…" required>
+      </div>
+    </div>
+
+    <!-- Weight -->
+    <div class="form-section-label">ওজন — ভরি · আনা · রতি · পয়েন্ট</div>
+    <div class="weight-row">
+      <div class="weight-box">
+        <span class="unit-label">ভরি</span>
+        <input type="number" name="bhori_weight" id="w_bhori" min="0" step="1" value="0" oninput="calcWeight()">
+        <span class="bn-label">১ ভরি = ১৬ আনা</span>
+      </div>
+      <div class="weight-box">
+        <span class="unit-label">আনা</span>
+        <input type="number" name="ana_weight" id="w_ana" min="0" max="15" step="1" value="0" oninput="calcWeight()">
+        <span class="bn-label">১ আনা = ৬ রতি</span>
+      </div>
+      <div class="weight-box">
+        <span class="unit-label">রতি</span>
+        <input type="number" name="rati_weight" id="w_rati" min="0" max="5" step="1" value="0" oninput="calcWeight()">
+        <span class="bn-label">১ রতি = ৬ পয়েন্ট</span>
+      </div>
+      <div class="weight-box">
+        <span class="unit-label">পয়েন্ট</span>
+        <input type="number" name="point_weight" id="w_point" min="0" max="5" step="1" value="0" oninput="calcWeight()">
+        <span class="bn-label">সর্বোচ্চ ৫</span>
+      </div>
+    </div>
+    <div class="weight-result" id="weightResult">
+      <div class="wr-item"><div class="lbl">মোট (ভরি)</div><div class="val" id="res_bhori">0.00</div></div>
+      <div class="wr-item"><div class="lbl">মোট (গ্রাম)</div><div class="val" id="res_gram">0.0000 g</div></div>
+      <div class="wr-item"><div class="lbl">বিস্তারিত</div><div class="val" id="res_detail">—</div></div>
+    </div>
+
+    <!-- Grade + Dates -->
+    <div class="form-section-label">গ্রেড ও তারিখ</div>
+    <div class="grid-3">
+      <div class="fg">
+        <label>ক্যারেট (Grade)</label>
+        <select name="grade">
+          <option>22K Gold</option>
+          <option>21K Gold</option>
+          <option>18K Gold</option>
+          <option>24K Gold</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>ডেলিভারি তারিখ (Delivery Date)</label>
+        <input type="date" name="delivery_date">
+      </div>
+      <div class="fg">
+        <label>অতিরিক্ত নির্দেশনা (Special Requests)</label>
+        <input name="special_requests" placeholder="ডিজাইন বা বিশেষ নির্দেশনা">
+      </div>
+    </div>
+
+    <!-- Price -->
+    <div class="form-section-label">মূল্য</div>
+    <div class="price-row">
+      <div class="fg">
+        <label>মোট আনুমানিক মূল্য (Estimated Price) ৳</label>
+        <input type="number" name="estimated_price" id="est_price" min="0" step="1" value="0" oninput="calcDue()">
+      </div>
+      <div class="fg">
+        <label>অগ্রিম প্রদত্ত (Advance Paid) ৳</label>
+        <input type="number" name="advance_paid" id="adv_paid" min="0" step="1" value="0" oninput="calcDue()">
+      </div>
+    </div>
+    <div class="due-preview">
+      <span class="lbl">💰 বাকি পরিমাণ (Due Amount)</span>
+      <span class="val" id="due_amount">৳ 0</span>
+    </div>
+
+    <div class="form-footer">
+      <button type="submit" class="btn-submit">✅ নতুন অর্ডার যুক্ত করুন</button>
+    </div>
+  </form>
+</div>
+
+
+<!-- ORDER LIST -->
+<div class="orders-card">
+  <div class="orders-head">
+    <h2>📋 চলতি অর্ডার তালিকা ও কিস্তি হিসাব</h2>
+    <span style="font-size:12px; color:#9ca3af;">{{ orders|length }} টি অর্ডার পাওয়া গেছে</span>
+  </div>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>অর্ডার নং</th>
+          <th>গ্রাহক</th>
+          <th>অলংকারের বিবরণ</th>
+          <th>ওজন</th>
+          <th>মোট মূল্য</th>
+          <th>অগ্রিম</th>
+          <th>কিস্তি জমা</th>
+          <th>মোট জমা</th>
+          <th>বাকি</th>
+          <th>ডেলিভারি</th>
+          <th>অ্যাকশন</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td>
+            <span class="ord-id">ORD-{{ "%04d"|format(o['id']) }}</span><br>
+            <span class="grade-badge" style="margin-top:4px; display:inline-block;">{{ o['grade'] }}</span>
+          </td>
+          <td>
+            <strong>{{ o['customer_name'] }}</strong><br>
+            <small style="color:#9ca3af;">{{ o['mobile'] or 'মোবাইল নেই' }}</small>
+          </td>
+          <td>
+            <strong>{{ o['item_details'] }}</strong>
+            {% if o['special_requests'] %}
+            <br><small style="color:#9ca3af;">💬 {{ o['special_requests'][:40] }}{% if o['special_requests']|length > 40 %}…{% endif %}</small>
+            {% endif %}
+          </td>
+          <td>
+            <div class="wt-pill">
+              {% if o['bhori_weight']  %}<span>{{ o['bhori_weight']|int }} ভরি</span>{% endif %}
+              {% if o['ana_weight']    %}<span>{{ o['ana_weight']|int }} আনা</span>{% endif %}
+              {% if o['rati_weight']   %}<span>{{ o['rati_weight']|int }} রতি</span>{% endif %}
+              {% if o['point_weight']  %}<span>{{ o['point_weight']|int }} পয়েন্ট</span>{% endif %}
+              {% if not o['bhori_weight'] and not o['ana_weight'] %}<span style="color:#d1d5db;">—</span>{% endif %}
             </div>
-            <label>অতিরিক্ত নির্দেশনা (Special Requests)<textarea name="special_requests" placeholder="ডিজাইন বা অন্য কোনো বিশেষ নির্দেশনা লিখুন..."></textarea></label>
-            <div class="order-submit-row"><span>অগ্রিম মূল্য save করার পর বাকি টাকা স্বয়ংক্রিয়ভাবে দেখাবে।</span><button type="submit">নতুন অর্ডার যুক্ত করুন</button></div>
-        </form>
-    </section>
+            {% if o['total_weight_gram'] %}
+            <span class="wt-gram">≈ {{ "%.4f"|format(o['total_weight_gram']) }} g</span>
+            {% endif %}
+          </td>
+          <td><span class="money-main">৳ {{ "{:,.0f}".format(o['estimated_price']) }}</span></td>
+          <td><span class="money-green">৳ {{ "{:,.0f}".format(o['advance_paid']) }}</span></td>
+          <td>
+            {% if o['installment_sum'] > 0 %}
+              <span class="money-green">৳ {{ "{:,.0f}".format(o['installment_sum']) }}</span><br>
+              <button type="button" class="btn-history" onclick="viewPayments({{ o['id'] }}, '{{ o['customer_name']|e }}', 'ORD-{{ '%04d'|format(o['id']) }}', {{ o['estimated_price'] }}, {{ o['total_paid'] }}, {{ o['due_amount'] }})">
+                📜 {{ o['payments']|length }} কিস্তি
+              </button>
+            {% else %}
+              <span style="color:#9ca3af; font-size:11px;">কোনো জমা নেই</span>
+            {% endif %}
+          </td>
+          <td><strong style="color:#1e1b4b;">৳ {{ "{:,.0f}".format(o['total_paid']) }}</strong></td>
+          <td>
+            {% if o['due_amount'] <= 0 %}
+              <span class="status-complete">✅ পরিশোধিত</span>
+            {% else %}
+              <span class="money-red">৳ {{ "{:,.0f}".format(o['due_amount']) }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if o['delivery_date'] %}
+              📅 {{ o['delivery_date'] }}
+            {% else %}
+              <span style="color:#d1d5db;">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              {% if o['due_amount'] > 0 %}
+                <button type="button" class="btn-kisti" onclick="openPaymentModal({{ o['id'] }}, '{{ o['customer_name']|e }}', 'ORD-{{ '%04d'|format(o['id']) }}', {{ o['estimated_price'] }}, {{ o['due_amount'] }})">
+                  💵 কিস্তি জমা
+                </button>
+              {% else %}
+                <button type="button" class="btn-history" onclick="viewPayments({{ o['id'] }}, '{{ o['customer_name']|e }}', 'ORD-{{ '%04d'|format(o['id']) }}', {{ o['estimated_price'] }}, {{ o['total_paid'] }}, 0)">
+                  📜 রসিদ/বিবরণ
+                </button>
+              {% endif %}
+              <form action="{{ url_for('delete_buy_order', order_id=o['id']) }}" method="POST"
+                    onsubmit="return confirm('ORD-{{ '%04d'|format(o['id']) }} মুছবেন?')">
+                <button type="submit" class="btn-del-row" style="width:100%;">🗑 মুছুন</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="11">
+            <div class="empty-state">📦 এখনও কোনো অর্ডার নেই। উপরের ফর্ম থেকে নতুন অর্ডার যোগ করুন।</div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 
-    <section class="order-list-card">
-        <div class="records-heading"><div><p class="eyebrow">ORDER RECORDS</p><h2>চলতি অর্ডার তালিকা</h2></div><span class="record-count">{{ orders|length }} টি অর্ডার</span></div>
-        <div class="table-scroll">
-            <table class="order-table">
-                <thead><tr><th>অর্ডার নং</th><th>গ্রাহক</th><th>অলংকার বিবরণ</th><th>ওজন ও ক্যারেট</th><th>মোট মূল্য</th><th>অগ্রিম</th><th>বাকি</th><th>ডেলিভারি</th><th>অ্যাকশন</th></tr></thead>
-                <tbody>
-                {% for order in orders %}
-                    <tr>
-                        <td><span class="voucher-id">ORD-{{ "%04d"|format(order['id']) }}</span></td>
-                        <td><strong>{{ order['customer_name'] }}</strong><small>{{ order['mobile'] or 'মোবাইল দেয়া নেই' }}</small></td>
-                        <td><strong>{{ order['item_details'] }}</strong><small>{{ order['grade'] }}</small></td>
-                        <td>{{ order['bhori_weight'] }} ভরি<br><small>{{ order['ana_weight'] }} আনা</small></td>
-                        <td><strong class="money">৳ {{ "%.2f"|format(order['estimated_price']) }}</strong></td>
-                        <td><span class="paid-money">৳ {{ "%.2f"|format(order['advance_paid']) }}</span></td>
-                        <td><span class="due-money">৳ {{ "%.2f"|format(order['estimated_price'] - order['advance_paid']) }}</span></td>
-                        <td>{{ order['delivery_date'] or '-' }}</td>
-                        <td><a class="delete-button" href="/buy-now/delete/{{ order['id'] }}" onclick="return confirm('Delete this order?')">মুছুন</a></td>
-                    </tr>
-                {% else %}
-                    <tr><td class="empty-record" colspan="9">এখনও কোনো অর্ডার নেই। উপরের form থেকে নতুন অর্ডার যোগ করুন।</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </section>
-</main>
-</body>
-</html>
+
+<!-- ══════════ KISTI PAYMENT MODAL ══════════ -->
+<div class="modal-bg" id="paymentModal">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('paymentModal')">✕</button>
+    <h3>💵 কিস্তি জমা এন্ট্রি</h3>
+    
+    <div class="modal-info-box">
+      <div>অর্ডার নং: <span class="hl" id="modal_ord_no">-</span></div>
+      <div>গ্রাহকের নাম: <span class="hl" id="modal_cust_name">-</span></div>
+      <div>মোট মূল্য: <span class="hl" id="modal_total_price">৳ 0</span></div>
+      <div>বর্তমান বাকি: <span class="hl" style="color:#dc2626;" id="modal_due_price">৳ 0</span></div>
+    </div>
+
+    <form id="paymentForm" method="POST">
+      <div class="fg" style="margin-bottom:12px;">
+        <label>জমার পরিমাণ (টাকা) <b style="color:red">*</b></label>
+        <input type="number" name="amount" id="kisti_amount" placeholder="যেমন: 5000" min="1" step="1" required autofocus>
+      </div>
+      <div class="fg" style="margin-bottom:12px;">
+        <label>জমার তারিখ</label>
+        <input type="date" name="payment_date" id="kisti_date">
+      </div>
+      <div class="fg" style="margin-bottom:16px;">
+        <label>মন্তব্য / রেফারেন্স (Note)</label>
+        <input type="text" name="note" placeholder="যেমন: নগদ ২য় কিস্তি জমা, বিকাশ বা রসিদ নং">
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" class="btn-del-row" style="background:#f3f4f6; color:#374151; border-color:#d1d5db;" onclick="closeModal('paymentModal')">বাতিল</button>
+        <button type="submit" class="btn-kisti" style="padding:10px 20px; font-size:13px;">💾 জমা নিশ্চিত করুন</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ══════════ PAYMENT HISTORY MODAL ══════════ -->
+<div class="modal-bg" id="historyModal">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal('historyModal')">✕</button>
+    <h3>📜 কিস্তি জমার বিস্তারিত বিবরণ</h3>
+    
+    <div class="modal-info-box">
+      <div>অর্ডার নং: <span class="hl" id="hist_ord_no">-</span></div>
+      <div>গ্রাহক: <span class="hl" id="hist_cust_name">-</span></div>
+      <div>মোট মূল্য: <span class="hl" id="hist_total">৳ 0</span> | মোট পরিশোধ: <span class="hl" style="color:#16a34a;" id="hist_paid">৳ 0</span></div>
+      <div>অবশিষ্ট বাকি: <span class="hl" style="color:#dc2626;" id="hist_due">৳ 0</span></div>
+    </div>
+
+    <div id="hist_payments_container">
+      <!-- Injected via JavaScript -->
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+      <button type="button" class="btn-kisti" onclick="closeModal('historyModal')">বন্ধ করুন</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// JSON representation of payments
+const ordersData = {
+  {% for o in orders %}
+  "{{ o['id'] }}": {
+    "ord_no": "ORD-{{ '%04d'|format(o['id']) }}",
+    "customer": "{{ o['customer_name']|e }}",
+    "estimated_price": {{ o['estimated_price'] }},
+    "advance_paid": {{ o['advance_paid'] }},
+    "total_paid": {{ o['total_paid'] }},
+    "due_amount": {{ o['due_amount'] }},
+    "payments": [
+      {% for p in o['payments'] %}
+      {
+        "id": {{ p['id'] }},
+        "amount": {{ p['amount'] }},
+        "date": "{{ p['payment_date'] or p['created_at'][:10] }}",
+        "note": "{{ (p['note'] or '')|e }}"
+      }{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ]
+  }{% if not loop.last %},{% endif %}
+  {% endfor %}
+};
+
+// 1 ভরি = 16 আনা = 96 রতি = 576 পয়েন্ট = 11.664 গ্রাম
+function calcWeight() {
+  const b = parseFloat(document.getElementById('w_bhori').value)  || 0;
+  const a = parseFloat(document.getElementById('w_ana').value)    || 0;
+  const r = parseFloat(document.getElementById('w_rati').value)   || 0;
+  const p = parseFloat(document.getElementById('w_point').value)  || 0;
+
+  const totalBhori = b + a/16 + r/96 + p/576;
+  const gram = totalBhori * 11.664;
+
+  document.getElementById('res_bhori').textContent  = totalBhori.toFixed(4) + ' ভরি';
+  document.getElementById('res_gram').textContent   = gram.toFixed(4) + ' g';
+
+  let detail = [];
+  if (b) detail.push(b + ' ভরি');
+  if (a) detail.push(a + ' আনা');
+  if (r) detail.push(r + ' রতি');
+  if (p) detail.push(p + ' পয়েন্ট');
+  document.getElementById('res_detail').textContent = detail.length ? detail.join(' ') : '—';
+}
+
+function calcDue() {
+  const est = parseFloat(document.getElementById('est_price').value) || 0;
+  const adv = parseFloat(document.getElementById('adv_paid').value)  || 0;
+  const due = est - adv;
+  document.getElementById('due_amount').textContent = '৳ ' + Math.max(0, due).toLocaleString('en-BD');
+}
+
+// Payment modal handlers
+function openPaymentModal(orderId, custName, ordNo, totalPrice, duePrice) {
+  document.getElementById('modal_ord_no').textContent = ordNo;
+  document.getElementById('modal_cust_name').textContent = custName;
+  document.getElementById('modal_total_price').textContent = '৳ ' + totalPrice.toLocaleString('en-BD');
+  document.getElementById('modal_due_price').textContent = '৳ ' + duePrice.toLocaleString('en-BD');
+  document.getElementById('kisti_amount').value = '';
+  document.getElementById('kisti_amount').max = duePrice;
+  document.getElementById('kisti_date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('paymentForm').action = '/buy-now/payment/' + orderId;
+  document.getElementById('paymentModal').classList.add('open');
+}
+
+function viewPayments(orderId, custName, ordNo, totalPrice, totalPaid, duePrice) {
+  const data = ordersData[orderId];
+  document.getElementById('hist_ord_no').textContent = ordNo;
+  document.getElementById('hist_cust_name').textContent = custName;
+  document.getElementById('hist_total').textContent = '৳ ' + totalPrice.toLocaleString('en-BD');
+  document.getElementById('hist_paid').textContent = '৳ ' + totalPaid.toLocaleString('en-BD');
+  document.getElementById('hist_due').textContent = '৳ ' + duePrice.toLocaleString('en-BD');
+
+  let html = '';
+  if (data && data.payments && data.payments.length > 0) {
+    html += '<table class="kisti-table"><thead><tr><th>নং</th><th>তারিখ</th><th>পরিমাণ</th><th>মন্তব্য</th><th>মুছুন</th></tr></thead><tbody>';
+    data.payments.forEach((p, idx) => {
+      html += `<tr>
+        <td>${idx + 1}</td>
+        <td>${p.date}</td>
+        <td><strong style="color:#16a34a;">৳ ${p.amount.toLocaleString('en-BD')}</strong></td>
+        <td>${p.note || '-'}</td>
+        <td>
+          <form action="/buy-now/payment/delete/${p.id}" method="POST" onsubmit="return confirm('এই কিস্তি জমা মুছবেন?')">
+            <button type="submit" class="btn-kisti-del" title="মুছুন">✕</button>
+          </form>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+  } else {
+    html = '<p style="text-align:center; color:#9ca3af; padding:15px;">এখনও কোনো কিস্তি জমা দেওয়া হয়নি। (শুধুমাত্র প্রাথমিক অগ্রিম)</p>';
+  }
+
+  document.getElementById('hist_payments_container').innerHTML = html;
+  document.getElementById('historyModal').classList.add('open');
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('open');
+}
+
+// Backdrop click to close
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+});
+
+// Escape key to close
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-bg.open').forEach(m => m.classList.remove('open'));
+  }
+});
+</script>
+{% endblock %}

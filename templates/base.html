@@ -27,11 +27,14 @@
             <h3>MENU</h3>
             <a href="{{ url_for('dashboard') }}">🏠 Dashboard</a>
             <a href="{{ url_for('gold_stock') }}">💎 Gold Stock</a>
+            <a href="{{ url_for('gold_sale') }}">💛 Gold Rates</a>
             <a href="{{ url_for('loans') }}">💰 Loan Entry</a>
             <a href="{{ url_for('buy_now') }}">🛍️ Buy Now Order</a>
             <a href="{{ url_for('customers') }}">👥 Customer</a>
             <a href="{{ url_for('calculator') }}">🧮 Calculator</a>
             <a href="{{ url_for('invoices') }}">🧾 Invoices</a>
+            <a href="{{ url_for('reports') }}">📊 Reports</a>
+            <a href="{{ url_for('settings') }}">⚙️ Settings</a>
         </aside>
 
       <main class="content">{% block content %}{% endblock %}</main>

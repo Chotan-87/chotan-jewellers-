@@ -1,0 +1,147 @@
+﻿{% extends "base.html" %}
+{% block title %}{{ customer["name"] }} | Customer Profile{% endblock %}
+
+{% block extra_head %}
+<style>
+.back-link { display:inline-flex; align-items:center; gap:6px; color:#6b7280; text-decoration:none; font-size:13px; font-weight:600; margin-bottom:18px; }
+.back-link:hover { color:#1f2937; }
+
+/* Profile Hero */
+.profile-hero { background:linear-gradient(135deg,#1e1b4b 0%,#312e81 100%); border-radius:14px; padding:28px 28px 24px; color:#fff; display:flex; align-items:center; gap:20px; margin-bottom:20px; flex-wrap:wrap; }
+.hero-avatar { width:70px; height:70px; border-radius:50%; background:rgba(255,255,255,.2); font-size:28px; font-weight:900; display:flex; align-items:center; justify-content:center; border:3px solid rgba(255,255,255,.4); flex-shrink:0; }
+.hero-info h2 { margin:0 0 4px; font-size:22px; }
+.hero-info p  { margin:0; font-size:13px; opacity:.8; }
+.hero-stats { margin-left:auto; display:flex; gap:16px; flex-wrap:wrap; }
+.hero-stat { background:rgba(255,255,255,.15); border-radius:10px; padding:10px 16px; text-align:center; min-width:90px; }
+.hero-stat .num { font-size:20px; font-weight:800; }
+.hero-stat .lbl { font-size:10px; opacity:.8; text-transform:uppercase; margin-top:2px; }
+
+/* Info cards */
+.info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-bottom:20px; }
+.info-card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:16px 18px; }
+.info-card .ic-label { font-size:11px; color:#9ca3af; font-weight:700; text-transform:uppercase; margin-bottom:4px; }
+.info-card .ic-val   { font-size:15px; font-weight:700; color:#1f2937; }
+
+/* Section table */
+.section-head { font-size:15px; font-weight:700; color:#1f2937; margin:20px 0 10px; display:flex; align-items:center; gap:8px; }
+.table-card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; margin-bottom:20px; }
+table { width:100%; border-collapse:collapse; }
+thead th { background:#f9fafb; padding:10px 14px; text-align:left; font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; border-bottom:1px solid #e5e7eb; }
+tbody td { padding:10px 14px; font-size:13px; color:#374151; border-bottom:1px solid #f3f4f6; }
+tbody tr:last-child td { border-bottom:none; }
+tbody tr:hover td { background:#f9fafb; }
+.empty-row { text-align:center; color:#d1d5db; padding:20px; font-size:13px; }
+.badge { display:inline-block; padding:3px 9px; border-radius:12px; font-size:11px; font-weight:700; }
+.badge-green { background:#dcfce7; color:#15803d; }
+.badge-red   { background:#fee2e2; color:#dc2626; }
+.badge-amber { background:#fef3c7; color:#92400e; }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('customers') }}" class="back-link">← Back to Customers</a>
+
+<!-- HERO -->
+<div class="profile-hero">
+  <div class="hero-avatar">{{ customer["name"][0]|upper }}</div>
+  <div class="hero-info">
+    <h2>{{ customer["name"] }}</h2>
+    <p>📞 {{ customer["mobile"] }}
+      {% if customer["address"] %} &nbsp;|&nbsp; 📍 {{ customer["address"] }}{% endif %}
+      {% if customer["age"] %} &nbsp;|&nbsp; 🎂 {{ customer["age"] }} yrs{% endif %}
+    </p>
+    <p style="margin-top:6px; font-size:12px; opacity:.65;">Customer since {{ customer["created_at"][:10] if customer["created_at"] else "—" }}</p>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="num">{{ invoices|length }}</div>
+      <div class="lbl">Invoices</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">{{ loans|length }}</div>
+      <div class="lbl">Loans</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">৳{{ "{:,.0f}".format(total_spent) }}</div>
+      <div class="lbl">Total Spent</div>
+    </div>
+  </div>
+</div>
+
+<!-- INFO CARDS -->
+<div class="info-grid">
+  <div class="info-card">
+    <div class="ic-label">Full Name</div>
+    <div class="ic-val">{{ customer["name"] }}</div>
+  </div>
+  <div class="info-card">
+    <div class="ic-label">Mobile</div>
+    <div class="ic-val">{{ customer["mobile"] }}</div>
+  </div>
+  <div class="info-card">
+    <div class="ic-label">Address</div>
+    <div class="ic-val">{{ customer["address"] or "—" }}</div>
+  </div>
+  <div class="info-card">
+    <div class="ic-label">Age</div>
+    <div class="ic-val">{{ customer["age"] or "—" }}</div>
+  </div>
+</div>
+
+<!-- INVOICES -->
+<div class="section-head">🧾 Recent Invoices</div>
+<div class="table-card">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th><th>Karat</th><th>Weight (g)</th><th>Grand Total</th><th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for inv in invoices %}
+      <tr>
+        <td>#{{ inv["id"] }}</td>
+        <td>{{ inv["karat"] }}</td>
+        <td>{{ "%.3f"|format(inv["weight"]) }}</td>
+        <td><strong>৳ {{ "{:,.0f}".format(inv["grand_total"]) }}</strong></td>
+        <td>{{ inv["created_at"][:10] if inv["created_at"] else "—" }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="empty-row">No invoices found for this customer.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- LOANS -->
+<div class="section-head">💰 Recent Loans</div>
+<div class="table-card">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th><th>Item</th><th>Amount</th><th>Interest</th><th>Status</th><th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for loan in loans %}
+      <tr>
+        <td>#{{ loan["id"] }}</td>
+        <td>{{ loan["item_details"] }}</td>
+        <td>৳ {{ "{:,.0f}".format(loan["amount"]) }}</td>
+        <td>{{ loan["interest_rate"] }}%</td>
+        <td>
+          {% if loan["status"] == "Active" %}
+            <span class="badge badge-green">Active</span>
+          {% else %}
+            <span class="badge badge-red">{{ loan["status"] }}</span>
+          {% endif %}
+        </td>
+        <td>{{ loan["created_at"][:10] if loan["created_at"] else "—" }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="empty-row">No loans found for this customer.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
