@@ -85,6 +85,16 @@
     <!-- LEFT INPUT FORM CARD -->
     <div class="form-card">
         <form method="POST" id="calcForm" action="/invoice/create">
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>গ্রাহকের নাম</label>
+                    <input type="text" class="form-input" name="customer_name" placeholder="গ্রাহকের নাম" required>
+                </div>
+                <div class="form-group">
+                    <label>মোবাইল নম্বর</label>
+                    <input type="tel" class="form-input" name="mobile" placeholder="01XXXXXXXXX">
+                </div>
+            </div>
             <div class="form-group">
                 <label>অলংকার / পণ্যের বিবরণ (ITEM NAME)</label>
                 <input type="text" class="form-input" name="item_name" id="item_name" placeholder="যেমন: সোনার ২২ ক্যারেট গলার হার, কানের দুল, আংটি..." required>
@@ -133,7 +143,7 @@
             <div class="grid-3">
                 <div class="form-group">
                     <label>ওয়েস্টেজ % (WASTAGE)</label>
-                    <input type="number" step="0.1" class="form-input" name="vat" id="wastage" value="5" oninput="calculateLive()">
+                    <input type="number" step="0.1" min="0" class="form-input" name="wastage_percent" id="wastage" value="5" oninput="calculateLive()">
                 </div>
                 <div class="form-group">
                     <label>মজুরি (MAKING BDT)</label>
@@ -145,11 +155,9 @@
                 </div>
             </div>
 
-            <input type="hidden" name="customer_name" value="সাধারণ কাস্টমার">
-            <input type="hidden" name="mobile" value="">
             <input type="hidden" name="rate" id="hidden_rate" value="225400">
             <input type="hidden" name="gold_value" id="hidden_gold_val">
-            <input type="hidden" name="vat" value="0">
+            <input type="hidden" name="wastage_amount" id="hidden_wastage_amount">
             <input type="hidden" name="stone" value="0">
             <input type="hidden" name="grand_total" id="hidden_grand_total">
         </form>
@@ -225,7 +233,7 @@ function fromBhori() {
     const ro = parseFloat(document.getElementById('ro').value) || 0;
     const pt = parseFloat(document.getElementById('pt').value) || 0;
 
-    const totalBhori = bh + (an / 16) + (ro / 96) + (pt / 960);
+    const totalBhori = bh + (an / 16) + (ro / 96) + (pt / 576);
     const gram = totalBhori * 11.664;
     document.getElementById('gram_input').value = gram.toFixed(3);
     calculateLive();
@@ -239,7 +247,7 @@ function fromGram() {
     const an = Math.floor(remAna);
     const remRoti = (remAna - an) * 6;
     const ro = Math.floor(remRoti);
-    const pt = Math.round((remRoti - ro) * 10);
+    const pt = Math.round((remRoti - ro) * 6);
 
     document.getElementById('bh').value = bh;
     document.getElementById('an').value = an;
@@ -248,9 +256,15 @@ function fromGram() {
     calculateLive();
 }
 
+const LIVE_RATES = {
+{% for gold_rate in rates %}
+    "{{ gold_rate['karat'] }}": {{ gold_rate['rate'] }},
+{% endfor %}
+};
+
 function calculateLive() {
     const sel = document.getElementById('karat_select');
-    const rate = parseFloat(sel.options[sel.selectedIndex].getAttribute('data-rate')) || 225000;
+    const rate = LIVE_RATES[sel.value] || 0;
     const gram = parseFloat(document.getElementById('gram_input').value) || 0;
     const wastagePct = parseFloat(document.getElementById('wastage').value) || 0;
     const making = parseFloat(document.getElementById('making').value) || 0;
@@ -272,10 +286,20 @@ function calculateLive() {
 
     document.getElementById('hidden_rate').value = rate;
     document.getElementById('hidden_gold_val').value = goldValue.toFixed(2);
+    document.getElementById('hidden_wastage_amount').value = wastageVal.toFixed(2);
     document.getElementById('hidden_grand_total').value = grandTotal.toFixed(2);
 }
 
-window.onload = calculateLive;
+window.onload = function() {
+    document.querySelectorAll('#karat_select option').forEach(option => {
+        const rate = LIVE_RATES[option.value];
+        if (rate) {
+            option.dataset.rate = rate;
+            option.textContent = option.value + ' Gold (৳' + rate.toLocaleString('en-BD') + ')';
+        }
+    });
+    calculateLive();
+};
 </script>
 </body>
 </html>

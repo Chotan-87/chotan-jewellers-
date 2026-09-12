@@ -8,37 +8,275 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
+    <style>
+      .lang-switch-wrap {
+        display: inline-flex;
+        align-items: center;
+        background: #241d17;
+        border: 1px solid #5a452a;
+        border-radius: 20px;
+        padding: 3px 10px;
+        gap: 6px;
+      }
+      .lang-icon { font-size: 13px; }
+      .lang-btn {
+        background: transparent;
+        border: none;
+        color: #a89f91;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 3px 9px;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+      }
+      .lang-btn:hover { color: #ffffff; }
+      .lang-btn.active {
+        background: #c28424;
+        color: #ffffff;
+        box-shadow: 0 2px 6px rgba(194, 132, 36, 0.4);
+      }
+      .lang-divider { color: #5a452a; font-size: 11px; }
+    </style>
     {% block extra_head %}{% endblock %}
   </head>
   <body>
     <header class="topbar">
-        <div>
-            <h2>THE AMIN JEWELLERS</h2>
-            <span>বন্দরটিলা, চট্টগ্রাম</span>
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <div>
+                <h2>THE AMIN JEWELLERS</h2>
+                <span data-i18n="shop_location">বন্দরটিলা, চট্টগ্রাম</span>
+            </div>
         </div>
-        <div>
-            👤 {{ username or 'Admin' }} &nbsp;&nbsp;
-            <a href="{{ url_for('logout') }}">Logout</a>
+        <div style="display: flex; align-items: center; gap: 18px;">
+            <!-- 🌐 Bangla / English Language Switcher -->
+            <div class="lang-switch-wrap" title="ভাষা পরিবর্তন / Switch Language">
+                <span class="lang-icon">🌐</span>
+                <button type="button" class="lang-btn" id="langBtnBn" onclick="setAppLanguage('bn')">বাংলা</button>
+                <span class="lang-divider">|</span>
+                <button type="button" class="lang-btn" id="langBtnEn" onclick="setAppLanguage('en')">English</button>
+            </div>
+            <div>
+                👤 {{ username or 'Admin' }} &nbsp;&nbsp;
+                <a href="{{ url_for('logout') }}" data-i18n="logout">Logout</a>
+            </div>
         </div>
     </header>
 
     <div class="dashboard">
         <aside class="sidebar">
-            <h3>MENU</h3>
-            <a href="{{ url_for('dashboard') }}">🏠 Dashboard</a>
-            <a href="{{ url_for('gold_stock') }}">💎 Gold Stock</a>
-            <a href="{{ url_for('gold_sale') }}">💛 Gold Rates</a>
-            <a href="{{ url_for('loans') }}">💰 Loan Entry</a>
-            <a href="{{ url_for('buy_now') }}">🛍️ Buy Now Order</a>
-            <a href="{{ url_for('customers') }}">👥 Customer</a>
-            <a href="{{ url_for('calculator') }}">🧮 Calculator</a>
-            <a href="{{ url_for('invoices') }}">🧾 Invoices</a>
-            <a href="{{ url_for('reports') }}">📊 Reports</a>
-            <a href="{{ url_for('settings') }}">⚙️ Settings</a>
+            <h3 data-i18n="menu">MENU</h3>
+            <a href="{{ url_for('dashboard') }}" data-i18n="menu_dashboard">🏠 Dashboard</a>
+            <a href="{{ url_for('gold_stock') }}" data-i18n="menu_stock">💎 Gold Stock</a>
+            <a href="{{ url_for('gold_sale') }}" data-i18n="menu_rates">💛 Gold Rates</a>
+            <a href="{{ url_for('loans') }}" data-i18n="menu_loans">💰 Loan Entry</a>
+            <a href="{{ url_for('buy_now') }}" data-i18n="menu_orders">🛍️ Buy Now Order</a>
+            <a href="{{ url_for('customers') }}" data-i18n="menu_customers">👥 Customer</a>
+            <a href="{{ url_for('calculator') }}" data-i18n="menu_calculator">🧮 Calculator</a>
+            <a href="{{ url_for('invoices') }}" data-i18n="menu_invoices">🧾 Invoices</a>
+            <a href="{{ url_for('reports') }}" data-i18n="menu_reports">📊 Reports</a>
+            <a href="{{ url_for('settings') }}" data-i18n="menu_settings">⚙️ Settings</a>
         </aside>
 
       <main class="content">{% block content %}{% endblock %}</main>
     </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         BANGLA / ENGLISH I18N SYSTEM (THE AMIN JEWELLERS)
+         ═══════════════════════════════════════════════════════════ -->
+    <script>
+    const APP_I18N = {
+      bn: {
+        shop_location: "বন্দরটিলা, চট্টগ্রাম",
+        logout: "Logout (লগআউট)",
+        menu: "মেনু",
+        menu_dashboard: "🏠 ড্যাশবোর্ড",
+        menu_stock: "💎 গোল্ড স্টক (Gold Stock)",
+        menu_rates: "💛 স্বর্ণের রেট (Gold Rates)",
+        menu_loans: "💰 বন্ধকি ঋণ খাতা (Loan Entry)",
+        menu_orders: "🛍️ অর্ডার খাতা (Buy Now)",
+        menu_customers: "👥 গ্রাহক তালিকা (Customer)",
+        menu_calculator: "🧮 ক্যালকুলেটর (Calculator)",
+        menu_invoices: "🧾 ইনভয়েস (Invoices)",
+        menu_reports: "📊 রিপোর্টস (Reports)",
+        menu_settings: "⚙️ সেটিংস (Settings)",
+
+        // General
+        btn_save: "সংরক্ষণ করুন",
+        btn_cancel: "বাতিল করুন",
+        btn_close: "বন্ধ করুন",
+        btn_delete: "মুছুন",
+        btn_print: "প্রিন্ট",
+        btn_quick_entry: "＋ দ্রুত এন্ট্রি",
+
+        // Gold Stock
+        gs_eyebrow: "✥ THE AMIN JEWELLERS · GOLD VAULT & INVENTORY SYSTEM",
+        gs_title: "💎 Gold Stock Management (স্টক খাতা)",
+        gs_subtitle: "অলংকার স্টক ট্র্যাকিং, QS Code, সনাতন ভরি-আনা-রতি ওজন ও অনুভূমিক কিউআর জুয়েলারি ট্যাগ খাতা",
+        gs_print_list: "🖨️ স্টক তালিকা প্রিন্ট",
+        gs_new_entry: "➕ নতুন স্টক এন্ট্রি",
+        gs_stat_items: "মোট আইটেম রেকর্ড",
+        gs_stat_qty: "মোট মজুদ সংখ্যা (Qty)",
+        gs_stat_weight: "মোট স্বর্ণের ওজন",
+        gs_stat_worth: "মোট সম্পদ মূল্যায়ন",
+        gs_form_title: "✨ নতুন স্বর্ণ স্টক এন্ট্রি করুন (Add Jewelry Stock)",
+        gs_form_subtitle: "স্বয়ংক্রিয় QS কোড ও অনুভূমিক জুয়েলারি ট্যাগ জেনারেট হবে",
+        gs_presets_lbl: "দ্রুত অলংকার নির্বাচন:",
+        gs_sec_1: "১. অলংকার বিবরণ ও হলমার্ক",
+        gs_sec_2: "২. ঐতিহ্যবাহী ওজন পদ্ধতি — ভরি · আনা · রতি · পয়েন্ট",
+        gs_sec_3: "৩. পরিমাণ ও ক্রয় রেট",
+        gs_tbl_title: "📋 Gold Stock তালিকা (অনুভূমিক QR / QS কোড ও ট্যাগ খাতা)",
+        gs_th_qr: "QR / QS Code & Tag",
+        gs_th_item: "Item Name",
+        gs_th_karat: "Karat",
+        gs_th_weight: "ওজন (ভরি / আনা / গ্রাম)",
+        gs_th_qty: "Qty",
+        gs_th_rate: "Purchase Rate",
+        gs_th_total: "Total Value",
+        gs_th_action: "Action",
+        gs_tag_btn: "🏷️ অনুভূমিক ট্যাগ",
+
+        // Loan
+        loan_eyebrow: "✥ THE AMIN JEWELLERS · PAWN SHOP LEDGER",
+        loan_title: "স্বর্ণ বন্ধক ও ঋণ খাতা (পন শপ লেজার)",
+        loan_subtitle: "গ্রাহকের স্বর্ণ বন্ধক রেখে ঋণ প্রদান, মাসিক সুদের হিসাব, কিস্তি আদায় ও রসিদ খাতা",
+        loan_stat_active: "মোট একটিভ বন্ধকি ঋণ",
+        loan_stat_interest: "মোট মাসিক প্রাক্কলিত সুদ",
+        loan_btn_new: "＋ নতুন বন্ধকি রসিদ এন্ট্রি",
+        loan_tbl_heading: "চলতি ঋণ খাতা ও রসিদ সমূহের পূর্ণাঙ্গ তালিকা",
+        loan_th_receipt: "রসিদ নম্বর",
+        loan_th_customer: "গ্রাহক বিবরণী",
+        loan_th_item: "বন্ধকি পণ্য ও ক্যারেট",
+        loan_th_amount: "ঋণ পরিমাণ",
+        loan_th_interest: "মাসিক সুদ হিসাব",
+        loan_th_status: "অবস্থা",
+        loan_th_action: "অ্যাকশন",
+        loan_btn_voucher: "🧾 রসিদ ও হিসাব",
+        loan_modal_title: "✨ নতুন বন্ধকি রসিদ এন্ট্রি (Pawn Loan Entry)",
+        loan_modal_subtitle: "গ্রাহকের স্বর্ণ বন্ধক রেখে দ্রুত নতুন রসিদ ও হিসাব খাতা তৈরি করুন",
+
+        // Dashboard
+        db_title: "ড্যাশবোর্ড (Dashboard)",
+        db_stock_card: "স্বর্ণ স্টক আইটেম",
+        db_sale_card: "আজকের বিক্রি",
+        db_invoice_card: "মোট ইনভয়েস",
+        db_cust_card: "মোট গ্রাহক",
+        db_welcome_sub: "The Amin Jewellers Management System প্রস্তুত আছে।"
+      },
+      en: {
+        shop_location: "Bandartila, Chattogram",
+        logout: "Logout",
+        menu: "MENU",
+        menu_dashboard: "🏠 Dashboard",
+        menu_stock: "💎 Gold Stock",
+        menu_rates: "💛 Gold Rates",
+        menu_loans: "💰 Loan Entry",
+        menu_orders: "🛍️ Buy Now Order",
+        menu_customers: "👥 Customer",
+        menu_calculator: "🧮 Calculator",
+        menu_invoices: "🧾 Invoices",
+        menu_reports: "📊 Reports",
+        menu_settings: "⚙️ Settings",
+
+        // General
+        btn_save: "Save",
+        btn_cancel: "Cancel",
+        btn_close: "Close",
+        btn_delete: "Delete",
+        btn_print: "Print",
+        btn_quick_entry: "＋ Quick Entry",
+
+        // Gold Stock
+        gs_eyebrow: "✥ THE AMIN JEWELLERS · GOLD VAULT & INVENTORY SYSTEM",
+        gs_title: "💎 Gold Stock Management (Stock Ledger)",
+        gs_subtitle: "Jewelry stock tracking, QS Code, traditional Bhori-Ana-Rati weight & horizontal tag ledger",
+        gs_print_list: "🖨️ Print Stock List",
+        gs_new_entry: "➕ Add New Stock",
+        gs_stat_items: "Total Unique Items",
+        gs_stat_qty: "Total Quantity (Qty)",
+        gs_stat_weight: "Total Gold Weight",
+        gs_stat_worth: "Total Stock Valuation",
+        gs_form_title: "✨ Add New Gold Stock Entry",
+        gs_form_subtitle: "Automatic QS Code & horizontal jewelry tag generation",
+        gs_presets_lbl: "Quick Item Presets:",
+        gs_sec_1: "1. Item Details & Karat Hallmark",
+        gs_sec_2: "2. Traditional Weight System — Bhori · Ana · Rati · Point",
+        gs_sec_3: "3. Quantity & Purchase Rate",
+        gs_tbl_title: "📋 Gold Stock Inventory (Horizontal QR / QS Code & Tag Ledger)",
+        gs_th_qr: "QR / QS Code & Tag",
+        gs_th_item: "Item Name",
+        gs_th_karat: "Karat",
+        gs_th_weight: "Weight (Bhori / Ana / Gram)",
+        gs_th_qty: "Qty",
+        gs_th_rate: "Purchase Rate",
+        gs_th_total: "Total Value",
+        gs_th_action: "Action",
+        gs_tag_btn: "🏷️ Horizontal Tag",
+
+        // Loan
+        loan_eyebrow: "✥ THE AMIN JEWELLERS · PAWN SHOP LEDGER",
+        loan_title: "Gold Pawn & Loan Ledger (Pawn Shop)",
+        loan_subtitle: "Customer gold pawn loan issuance, monthly interest calculation, installment & voucher ledger",
+        loan_stat_active: "Total Active Pawn Loan",
+        loan_stat_interest: "Total Monthly Interest",
+        loan_btn_new: "＋ New Pawn Loan Entry",
+        loan_tbl_heading: "Complete List of Active Pawn Records & Vouchers",
+        loan_th_receipt: "Receipt No",
+        loan_th_customer: "Customer Details",
+        loan_th_item: "Pawned Item & Karat",
+        loan_th_amount: "Loan Amount",
+        loan_th_interest: "Monthly Interest",
+        loan_th_status: "Status",
+        loan_th_action: "Action",
+        loan_btn_voucher: "🧾 Voucher & Details",
+        loan_modal_title: "✨ New Pawn Loan Entry (Voucher)",
+        loan_modal_subtitle: "Quickly create customer pawn receipt and book accounting records",
+
+        // Dashboard
+        db_title: "Dashboard",
+        db_stock_card: "Gold Stock Items",
+        db_sale_card: "Today's Sale",
+        db_invoice_card: "Invoices",
+        db_cust_card: "Customers",
+        db_welcome_sub: "The Amin Jewellers Management System is ready to use."
+      }
+    };
+
+    function setAppLanguage(lang) {
+      if (!['bn', 'en'].includes(lang)) lang = 'bn';
+      localStorage.setItem('amin_lang', lang);
+      document.documentElement.lang = lang;
+
+      const btnBn = document.getElementById('langBtnBn');
+      const btnEn = document.getElementById('langBtnEn');
+      if (btnBn && btnEn) {
+        btnBn.classList.toggle('active', lang === 'bn');
+        btnEn.classList.toggle('active', lang === 'en');
+      }
+
+      const dict = APP_I18N[lang] || APP_I18N.bn;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+          el.textContent = dict[key];
+        }
+      });
+
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (dict[key]) {
+          el.placeholder = dict[key];
+        }
+      });
+
+      window.dispatchEvent(new CustomEvent('appLanguageChanged', { detail: { lang } }));
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedLang = localStorage.getItem('amin_lang') || 'bn';
+      setAppLanguage(savedLang);
+    });
+    </script>
     {% block scripts %}{% endblock %}
   </body>
 </html>

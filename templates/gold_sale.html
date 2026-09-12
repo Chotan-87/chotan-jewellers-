@@ -19,8 +19,8 @@
 {% endblock %}
 
 {% block content %}
-<h1>?? Gold Rates</h1>
-<p style="color:#6b7280; margin-bottom:20px;">Update today's gold rates per bhori (???). These rates are used by the Calculator.</p>
+<h1>Gold Rates</h1>
+<p style="color:#6b7280; margin-bottom:20px;">Update today's gold rates per bhori. These rates are used by the Calculator.</p>
 
 <div class="current-rates">
     {% for r in rates %}
@@ -33,7 +33,7 @@
 </div>
 
 <div class="rate-card">
-    <h3 style="margin-bottom:16px; color:#1f2937;">?? Update Rates</h3>
+    <h3 style="margin-bottom:16px; color:#1f2937;">Update Rates</h3>
 
     {% if message %}
     <div class="success-msg">? {{ message }}</div>
@@ -47,7 +47,7 @@
         </div>
         {% endfor %}
         <button type="submit" style="background:#1e1b4b; color:#fff; border:none; padding:10px 24px; border-radius:6px; font-size:14px; font-weight:700; cursor:pointer; width:100%; margin-top:8px;">
-            ?? Save Rates
+            Save Rates
         </button>
     </form>
 </div>

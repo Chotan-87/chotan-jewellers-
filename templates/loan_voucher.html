@@ -22,7 +22,26 @@
             <thead><tr><th>Item</th><th>Weight</th><th>Amount</th><th>Interest</th><th>Status</th></tr></thead>
             <tbody>
             {% for loan in loans %}
-                <tr><td>{{ loan['item_details'] }}</td><td>{{ loan['weight'] or 0 }} g</td><td>৳ {{ '%.2f'|format(loan['amount']) }}</td><td>{{ loan['interest_rate'] }}%</td><td>{{ loan['status'] }}</td></tr>
+                <tr>
+                    <td>{{ loan['item_details'] }}{% if loan['karat'] %} ({{ loan['karat'] }}){% endif %}</td>
+                    <td>
+                        {{ loan['weight'] or 0 }} g
+                        {% if loan['bhori'] or loan['ana'] or loan['rati'] or loan['point'] %}
+                            <br><small>{{ loan['bhori'] or 0 }} bhori, {{ loan['ana'] or 0 }} ana, {{ loan['rati'] or 0 }} rati, {{ loan['point'] or 0 }} point</small>
+                        {% endif %}
+                    </td>
+                    <td>৳ {{ '%.2f'|format(loan['amount']) }}</td>
+                    <td>{{ loan['interest_rate'] }}%</td>
+                    <td>{{ loan['status'] }}</td>
+                </tr>
+                {% if loan['address'] or loan['issue_date'] %}
+                <tr>
+                    <td colspan="5">
+                        {% if loan['address'] %}<strong>Address:</strong> {{ loan['address'] }}{% endif %}
+                        {% if loan['issue_date'] %}<strong>Pawn date:</strong> {{ loan['issue_date'] }}{% endif %}
+                    </td>
+                </tr>
+                {% endif %}
             {% else %}
                 <tr><td colspan="5">No loan entries.</td></tr>
             {% endfor %}

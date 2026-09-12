@@ -1,360 +1,1253 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}Gold Stock Management (স্টক খাতা) | The Amin Jewellers{% endblock %}
 
 {% block extra_head %}
 <style>
-/* ── Page Header & Stats ── */
-.gs-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-.gs-header h1 { margin: 0; font-size: 22px; color: #1f2937; }
-.gs-header p { margin: 4px 0 0; font-size: 13px; color: #6b7280; }
+/* ═══════════════════════════════════════════════════════════
+   THE AMIN JEWELLERS - LUXURY GOLD VAULT THEME (স্টক খাতা)
+   HORIZONTAL QR/QS CODE & JEWELLERY TAG SYSTEM
+   ═══════════════════════════════════════════════════════════ */
+:root {
+    --gold-primary: #c28424;
+    --gold-hover: #b47218;
+    --gold-dark: #854d0e;
+    --gold-light: #fef3c7;
+    --gold-border: #e8d7be;
+    --gold-gradient: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    --dark-royal: #1c1815;
+    --dark-surface: #26201b;
+    --card-bg: #ffffff;
+    --border-soft: #ede8e1;
+    --text-main: #2b221b;
+    --text-muted: #786e65;
+}
 
-.gs-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 22px; }
-.gs-stat-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
-.gs-stat-card .lbl { font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
-.gs-stat-card .val { font-size: 22px; font-weight: 800; color: #1e1b4b; margin-top: 4px; }
-.gs-stat-card.green .val { color: #059669; }
-.gs-stat-card.amber .val { color: #d97706; }
+/* Page Shell */
+.gs-workspace {
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
 
-/* ── Entry Form Card ── */
-.gs-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-.gs-card h2 { font-size: 16px; font-weight: 800; color: #1e1b4b; margin: 0 0 18px; display: flex; align-items: center; gap: 8px; }
+/* ── Top Header Banner ── */
+.gs-header {
+    background: #ffffff;
+    border: 1px solid var(--gold-border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    box-shadow: 0 4px 16px rgba(49, 37, 25, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+.gs-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #d97706, #fbbf24, #b45309);
+}
+.gs-header .eyebrow {
+    color: var(--gold-primary);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+.gs-header h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--dark-royal);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.gs-header p {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+.gs-header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.btn-top-action {
+    background: #fff;
+    border: 1px solid var(--gold-border);
+    color: #704413;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+.btn-top-action:hover {
+    background: #fdfaf6;
+    border-color: var(--gold-primary);
+    transform: translateY(-1px);
+}
+.btn-top-action.dark {
+    background: var(--dark-royal);
+    border-color: var(--dark-royal);
+    color: #fff;
+}
+.btn-top-action.dark:hover {
+    background: #382c23;
+}
 
-.section-divider { font-size: 11px; font-weight: 800; color: #6b7280; text-transform: uppercase; letter-spacing: 0.8px; margin: 16px 0 10px; padding-bottom: 6px; border-bottom: 1px solid #f3f4f6; }
+/* ── Stats Overview ── */
+.gs-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+}
+.gs-stat-card {
+    background: #ffffff;
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(49, 37, 25, 0.04);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.gs-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(49, 37, 25, 0.08);
+}
+.gs-stat-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--gold-primary);
+}
+.gs-stat-card.qty::after { background: #3b82f6; }
+.gs-stat-card.amber::after { background: #f59e0b; }
+.gs-stat-card.green::after { background: #10b981; }
 
-.form-grid-3 { display: grid; grid-template-columns: 1.2fr 1.8fr 1fr; gap: 12px; margin-bottom: 14px; }
-.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.gs-stat-card .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.gs-stat-card .lbl {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+.gs-stat-card .icon {
+    font-size: 18px;
+    opacity: 0.85;
+}
+.gs-stat-card .val {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--dark-royal);
+    margin-top: 6px;
+}
+.gs-stat-card.green .val { color: #047857; }
+.gs-stat-card.amber .val { color: #b45309; }
+.gs-stat-card.qty .val { color: #1d4ed8; }
+.gs-stat-card .subtext {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 4px;
+    display: block;
+}
+
+/* ── Main Cards (Form & Records) ── */
+.gs-card {
+    background: #ffffff;
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 3px 12px rgba(49, 37, 25, 0.04);
+}
+.gs-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.gs-card-header h2 {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--dark-royal);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.section-divider {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--gold-dark);
+    background: #fdfaf6;
+    border: 1px solid var(--gold-border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin: 18px 0 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Quick item presets */
+.preset-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+.preset-btn {
+    background: #fcfbf9;
+    border: 1px solid #ded9d0;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #5a4d42;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.preset-btn:hover {
+    background: #f9e7cc;
+    border-color: var(--gold-primary);
+    color: #704413;
+}
+
+/* Grid Layouts */
+.form-grid-3 { display: grid; grid-template-columns: 1.1fr 1.9fr 1.2fr; gap: 14px; margin-bottom: 14px; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+@media (max-width: 820px) {
+    .form-grid-3, .form-grid-2 { grid-template-columns: 1fr; }
+}
 
 .gs-field { display: flex; flex-direction: column; gap: 5px; }
-.gs-field label { font-size: 12px; font-weight: 700; color: #374151; }
-.gs-field input, .gs-field select { padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; outline: none; transition: border-color 0.2s; width: 100%; box-sizing: border-box; }
-.gs-field input:focus, .gs-field select:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+.gs-field label { font-size: 12px; font-weight: 700; color: #4b3f35; }
+.gs-field input, .gs-field select {
+    padding: 11px 14px;
+    border: 1px solid #d5cfc5;
+    border-radius: 8px;
+    font-size: 13px;
+    background: #faf9f7;
+    color: #2b221b;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+.gs-field input:focus, .gs-field select:focus {
+    border-color: var(--gold-primary);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(194, 132, 36, 0.18);
+}
 
-/* ── 4-Box Weight System (Vari, Anna, Rati, Point) ── */
-.weight-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; }
-.weight-box-item { background: #fafafa; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 10px 10px; text-align: center; }
-.weight-box-item .u-label { font-size: 11px; font-weight: 800; color: #6366f1; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
-.weight-box-item .sub-note { font-size: 10px; color: #9ca3af; margin-top: 4px; display: block; }
-.weight-box-item input { border: none; border-bottom: 2px solid #e5e7eb; border-radius: 0; padding: 6px 4px; font-size: 20px; font-weight: 800; color: #1e1b4b; text-align: center; background: transparent; width: 100%; box-sizing: border-box; }
-.weight-box-item input:focus { outline: none; border-bottom-color: #6366f1; }
+/* ── 4-Box Traditional Weight Grid ── */
+.weight-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+}
+@media (max-width: 600px) {
+    .weight-grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
 
-.live-calc-strip { background: linear-gradient(135deg, #1e1b4b, #312e81); color: #fff; border-radius: 10px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 16px; }
-.strip-col .lbl { font-size: 10px; opacity: 0.75; text-transform: uppercase; }
-.strip-col .val { font-size: 16px; font-weight: 800; }
+.weight-box-item {
+    background: #fdfcf9;
+    border: 1.5px solid var(--gold-border);
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+    position: relative;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.weight-box-item:focus-within {
+    border-color: var(--gold-primary);
+    box-shadow: 0 0 0 3px rgba(194, 132, 36, 0.15);
+    background: #ffffff;
+}
+.weight-box-item .u-label {
+    font-size: 12px;
+    font-weight: 800;
+    color: #854d0e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 4px;
+}
+.weight-box-item .sub-note {
+    font-size: 10px;
+    color: #a3978a;
+    margin-top: 4px;
+    display: block;
+}
+.weight-box-item input {
+    border: none;
+    border-bottom: 2px solid var(--gold-border);
+    border-radius: 0;
+    padding: 6px 4px;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--dark-royal);
+    text-align: center;
+    background: transparent;
+    width: 100%;
+    box-sizing: border-box;
+}
+.weight-box-item input:focus {
+    outline: none;
+    border-bottom-color: var(--gold-primary);
+}
 
-.btn-save-stock { background: #1e1b4b; color: #fff; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s; }
-.btn-save-stock:hover { background: #312e81; }
+/* ── Live Calculation Strip ── */
+.live-calc-strip {
+    background: linear-gradient(135deg, #1c1815 0%, #2f251c 100%);
+    border: 1px solid rgba(213, 176, 112, 0.35);
+    color: #fef3c7;
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 18px;
+    box-shadow: 0 4px 14px rgba(28, 24, 21, 0.18);
+}
+.strip-col .lbl {
+    font-size: 10px;
+    color: #d5b070;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+}
+.strip-col .val {
+    font-size: 17px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-top: 2px;
+}
+.strip-col .val.gold {
+    color: #fcd34d;
+}
 
-/* ── Search & Filter Bar ── */
-.gs-filter-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
-.gs-search-box { display: flex; align-items: center; background: #fff; border: 1px solid #d1d5db; border-radius: 8px; padding: 6px 12px; width: 320px; }
-.gs-search-box input { border: none; outline: none; width: 100%; font-size: 13px; margin-left: 6px; }
+/* Submit Action Button */
+.btn-save-stock {
+    background: var(--gold-gradient);
+    color: #ffffff;
+    border: none;
+    padding: 13px 32px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(180, 83, 9, 0.25);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-save-stock:hover {
+    background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(180, 83, 9, 0.35);
+}
 
-/* ── Table Design ── */
-.table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid #e5e7eb; background: #fff; }
-table { width: 100%; border-collapse: collapse; min-width: 1000px; text-align: left; }
-thead th { background: #f9fafb; color: #4b5563; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 14px; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
-tbody td { padding: 12px 14px; font-size: 13px; color: #374151; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+/* ── Filter & Search Toolbar ── */
+.gs-filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.filter-pills-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.filter-btn {
+    background: #fdfcfb;
+    border: 1px solid var(--border-soft);
+    color: var(--text-muted);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.filter-btn:hover {
+    border-color: var(--gold-primary);
+    color: var(--gold-dark);
+}
+.filter-btn.active {
+    background: var(--dark-royal);
+    color: #ffffff;
+    border-color: var(--dark-royal);
+}
+
+.gs-search-box {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #d5cfc5;
+    border-radius: 8px;
+    padding: 7px 12px;
+    width: 320px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.gs-search-box:focus-within {
+    border-color: var(--gold-primary);
+    box-shadow: 0 0 0 3px rgba(194, 132, 36, 0.15);
+}
+.gs-search-box input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 13px;
+    margin-left: 8px;
+    color: var(--text-main);
+}
+
+/* ── Gold Stock Table Design ── */
+.table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(49, 37, 25, 0.02);
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1020px;
+    text-align: left;
+}
+thead th {
+    background: #fcfaf7;
+    color: #704413;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 13px 14px;
+    border-bottom: 1.5px solid var(--gold-border);
+    white-space: nowrap;
+}
+tbody td {
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--text-main);
+    border-bottom: 1px solid #f3efe9;
+    vertical-align: middle;
+}
 tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover td { background: #fbfbfd; }
+tbody tr:hover td { background: #fdfaf6; }
 
-/* Badges & Pills */
-.qs-badge { background: #1e1b4b; color: #fff; font-size: 11px; font-weight: 800; padding: 5px 10px; border-radius: 6px; display: inline-block; letter-spacing: 0.4px; font-family: monospace; }
-.karat-pill { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; display: inline-block; }
-.k-24 { background: #fef3c7; color: #92400e; }
-.k-22 { background: #fed7aa; color: #9a3412; }
-.k-21 { background: #fde68a; color: #854d0e; }
-.k-18 { background: #e0e7ff; color: #3730a3; }
+/* ── HORIZONTAL QR / QS CODE & TAG CELL IN TABLE ── */
+.qr-qs-tag-horizontal {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #fdfcf9;
+    border: 1px solid var(--gold-border);
+    padding: 6px 10px;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    white-space: nowrap;
+}
+.qr-thumb-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.qr-thumb {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--gold-border);
+    border-radius: 6px;
+    padding: 2px;
+    background: #ffffff;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: block;
+}
+.qr-thumb:hover {
+    transform: scale(1.22);
+    box-shadow: 0 4px 14px rgba(49, 37, 25, 0.22);
+    border-color: var(--gold-primary);
+    z-index: 10;
+}
+.qr-qs-data {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+}
+.qs-badge {
+    background: var(--dark-royal);
+    color: #fcd34d;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 5px;
+    display: inline-block;
+    letter-spacing: 0.5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    border: 1px solid rgba(252, 211, 77, 0.3);
+}
+.btn-qr-view {
+    background: #fffbf5;
+    border: 1px solid var(--gold-border);
+    color: #704413;
+    border-radius: 5px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+}
+.btn-qr-view:hover {
+    background: #f9e7cc;
+    border-color: var(--gold-primary);
+}
 
-/* QR Code & QS Code Block */
-.qr-container { display: flex; align-items: center; gap: 8px; }
-.qr-thumb { width: 46px; height: 46px; border: 1px solid #e5e7eb; border-radius: 6px; padding: 2px; background: #fff; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-.qr-thumb:hover { transform: scale(1.15); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-.btn-qr-view { background: #f3f4f6; border: 1px solid #d1d5db; color: #374151; border-radius: 5px; padding: 4px 7px; font-size: 11px; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; }
-.btn-qr-view:hover { background: #e5e7eb; }
+/* Karat Pills */
+.karat-pill {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 6px;
+    display: inline-block;
+    letter-spacing: 0.3px;
+}
+.k-24 { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.k-22 { background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+.k-21 { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+.k-18 { background: #ede9fe; color: #5b21b6; border: 1px solid #ddd6fe; }
 
-/* Weight display badges */
+/* Weight Display Pills */
 .wt-pills { display: flex; flex-wrap: wrap; gap: 4px; font-size: 12px; }
-.wt-pills span { background: #f3f4f6; color: #374151; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 11px; }
-.wt-gram-sub { font-size: 11px; color: #9ca3af; margin-top: 3px; display: block; }
+.wt-pills span {
+    background: #f7f4ee;
+    color: #4b3f35;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 11px;
+    border: 1px solid #eae4d8;
+}
+.wt-gram-sub {
+    font-size: 11px;
+    color: #8d8175;
+    margin-top: 3px;
+    display: block;
+}
 
 /* Pricing */
-.val-main { font-size: 14px; font-weight: 800; color: #059669; }
-.val-rate { font-size: 12px; color: #6b7280; }
+.val-main { font-size: 14px; font-weight: 800; color: #047857; }
+.val-rate { font-size: 12px; color: #786e65; }
 
-/* Action */
-.btn-del { color: #dc2626; font-size: 12px; font-weight: 700; text-decoration: none; background: #fef2f2; border: 1px solid #fecaca; padding: 5px 10px; border-radius: 6px; display: inline-block; transition: background 0.2s; }
+/* Delete Action */
+.btn-del {
+    color: #dc2626;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 5px 10px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s ease;
+}
 .btn-del:hover { background: #fee2e2; }
 
-/* ── QR & Tag Print Modal ── */
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; align-items: center; justify-content: center; }
+/* ═══════════════════════════════════════════════════════════
+   HORIZONTAL JEWELLERY PRICE & BARCODE TAG MODAL
+   ═══════════════════════════════════════════════════════════ */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(28, 24, 21, 0.7);
+    backdrop-filter: blur(3px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
 .modal-overlay.open { display: flex; }
-.qr-tag-card { background: #fff; border-radius: 16px; padding: 26px; width: 100%; max-width: 420px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); text-align: center; position: relative; }
-.qr-tag-card .close-btn { position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; color: #6b7280; }
+.qr-tag-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 26px 30px;
+    width: 100%;
+    max-width: 620px;
+    box-shadow: 0 25px 65px -12px rgba(28, 24, 21, 0.4);
+    position: relative;
+    border: 1px solid var(--gold-border);
+}
+.qr-tag-card .close-btn {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #9ca3af;
+    transition: color 0.15s;
+}
+.qr-tag-card .close-btn:hover { color: #2b221b; }
 
-.tag-preview { border: 2px dashed #d1d5db; border-radius: 12px; padding: 20px; margin: 18px 0; background: #fafafa; }
-.tag-shop { font-size: 13px; font-weight: 800; color: #1e1b4b; text-transform: uppercase; letter-spacing: 0.5px; }
-.tag-qs { font-size: 16px; font-weight: 900; color: #1e1b4b; margin: 6px 0; font-family: monospace; }
-.tag-qr-large { width: 160px; height: 160px; margin: 10px auto; display: block; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; padding: 6px; }
-.tag-item-name { font-size: 15px; font-weight: 800; color: #111827; }
-.tag-item-details { font-size: 12px; color: #4b5563; margin-top: 4px; display: flex; justify-content: center; gap: 10px; }
-.tag-price { font-size: 15px; font-weight: 900; color: #059669; margin-top: 6px; }
+.modal-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-right: 28px;
+}
+.modal-header-row h3 {
+    margin: 0;
+    color: #78350f;
+    font-size: 17px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.tag-mode-pill {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 12px;
+}
 
-.modal-actions { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
-.btn-print { background: #1e1b4b; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.btn-print:hover { background: #312e81; }
+/* ── TRUE HORIZONTAL JEWELLERY BARBELL TAG PREVIEW ── */
+.tag-horizontal-wrap {
+    border: 2px dashed #c28424;
+    border-radius: 14px;
+    padding: 18px 20px;
+    background: #fffefb;
+    box-shadow: inset 0 0 20px rgba(217, 119, 6, 0.05), 0 4px 14px rgba(49, 37, 25, 0.06);
+    display: flex;
+    align-items: stretch;
+    gap: 18px;
+    position: relative;
+    text-align: left;
+}
 
-/* ── Print Media ── */
+/* Left Flap: QR Code & QS Serial */
+.tag-left-flap {
+    flex: 0 0 135px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: #ffffff;
+    border: 1px solid var(--gold-border);
+    border-radius: 10px;
+    padding: 10px 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+.tag-qr-large {
+    width: 100px;
+    height: 100px;
+    display: block;
+    border-radius: 6px;
+    background: #fff;
+    margin-bottom: 6px;
+}
+.tag-qs-code {
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--dark-royal);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: #fef3c7;
+    display: block;
+    width: 100%;
+    padding: 3px 4px;
+    border-radius: 4px;
+    border: 1px solid #fde68a;
+    box-sizing: border-box;
+}
+.tag-scan-hint {
+    font-size: 8px;
+    font-weight: 800;
+    color: #92400e;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+    text-transform: uppercase;
+}
+
+/* Center Notches (Jewelry Barbell String Simulation) */
+.tag-barbell-bridge {
+    flex: 0 0 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+.tag-string-hole {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #e8d7be;
+    border: 1px solid #c28424;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 7px;
+    color: #92400e;
+}
+.tag-bridge-line {
+    width: 2px;
+    flex: 1;
+    background: repeating-linear-gradient(to bottom, #c28424 0, #c28424 3px, transparent 3px, transparent 6px);
+    margin: 4px 0;
+}
+
+/* Right Flap: Store, Item, Hallmark, Weight, Price */
+.tag-right-flap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-left: 2px;
+}
+.tag-store-header {
+    border-bottom: 1px dashed var(--gold-border);
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+}
+.tag-store-name {
+    font-size: 14px;
+    font-weight: 900;
+    color: #78350f;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+.tag-store-location {
+    font-size: 10px;
+    color: #92400e;
+    font-weight: 600;
+}
+.tag-item-title {
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--dark-royal);
+    margin: 4px 0 6px;
+    line-height: 1.3;
+}
+.tag-specs-horizontal {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    background: #fdfaf6;
+    border: 1px solid var(--gold-border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    margin-bottom: 8px;
+}
+.tag-spec-item .s-lbl {
+    font-size: 9px;
+    font-weight: 800;
+    color: #8d8175;
+    text-transform: uppercase;
+    display: block;
+}
+.tag-spec-item .s-val {
+    font-size: 12px;
+    font-weight: 800;
+    color: #2b221b;
+}
+.tag-spec-item .s-val.karat {
+    color: #9a3412;
+}
+
+.tag-price-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 6px 12px;
+}
+.tag-price-banner .p-lbl {
+    font-size: 11px;
+    font-weight: 800;
+    color: #166534;
+    text-transform: uppercase;
+}
+.tag-price-banner .p-val {
+    font-size: 17px;
+    font-weight: 900;
+    color: #15803d;
+}
+
+/* Modal Bottom Actions */
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+.btn-print {
+    background: var(--gold-gradient);
+    color: #ffffff;
+    border: none;
+    padding: 11px 26px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 10px rgba(180, 83, 9, 0.2);
+    transition: transform 0.15s;
+}
+.btn-print:hover {
+    background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+    transform: translateY(-1px);
+}
+
+/* ── PRINT MEDIA FOR HORIZONTAL JEWELLERY TAG ── */
 @media print {
     body * { visibility: hidden; }
     #tagPrintArea, #tagPrintArea * { visibility: visible; }
-    #tagPrintArea { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+    #tagPrintArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        max-width: 540px;
+        border: 2px dashed #92400e;
+        padding: 15px;
+        background: #fff;
+        margin: 0;
+    }
 }
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="gs-workspace">
 
-<!-- HEADER & SUMMARY STATS -->
-<div class="gs-header">
-    <div>
-        <h1>💎 Gold Stock Management (স্টক খাতা)</h1>
-        <p>অলংকার স্টক ট্র্যাকিং, QS Code, ভরি/আনা/রতি/পয়েন্ট ওজন হিসাব ও কিউআর কোড ট্যাগ জেনারেটর</p>
-    </div>
-</div>
+    <!-- ══════════ TOP HEADER BANNER ══════════ -->
+    <header class="gs-header">
+        <div>
+            <span class="eyebrow" data-i18n="gs_eyebrow">✥ THE AMIN JEWELLERS · GOLD VAULT & INVENTORY SYSTEM</span>
+            <h1 data-i18n="gs_title">💎 Gold Stock Management (স্টক খাতা)</h1>
+            <p data-i18n="gs_subtitle">অলংকার স্টক ট্র্যাকিং, QS Code, সনাতন ভরি-আনা-রতি ওজন ও অনুভূমিক কিউআর জুয়েলারি ট্যাগ খাতা</p>
+        </div>
+        <div class="gs-header-actions">
+            <button type="button" class="btn-top-action" onclick="window.print()" data-i18n="gs_print_list">
+                🖨️ স্টক তালিকা প্রিন্ট
+            </button>
+            <a href="#newStockSection" class="btn-top-action dark" data-i18n="gs_new_entry">
+                ➕ নতুন স্টক এন্ট্রি
+            </a>
+        </div>
+    </header>
 
-{% set total_items = stocks|length %}
-{% set total_qty = stocks|sum(attribute='quantity') %}
-{% set total_weight = stocks|sum(attribute='weight') %}
-{% set total_worth = stocks|sum(attribute='total_value') %}
+    {% set total_items = stocks|length %}
+    {% set total_qty = stocks|sum(attribute='quantity') %}
+    {% set total_weight = stocks|sum(attribute='weight') %}
+    {% set total_worth = stocks|sum(attribute='total_value') %}
 
-<div class="gs-stats">
-    <div class="gs-stat-card">
-        <div class="lbl">মোট অলংকার আইটেম</div>
-        <div class="val">{{ total_items }} টি</div>
-    </div>
-    <div class="gs-stat-card">
-        <div class="lbl">মোট স্টক পরিমাণ (Qty)</div>
-        <div class="val">{{ total_qty }} পিস</div>
-    </div>
-    <div class="gs-stat-card amber">
-        <div class="lbl">মোট স্টক ওজন</div>
-        <div class="val">{{ "%.3f"|format(total_weight) }} g</div>
-    </div>
-    <div class="gs-stat-card green">
-        <div class="lbl">মোট ক্রয়মূল্য সম্পদ</div>
-        <div class="val">৳ {{ "{:,.0f}".format(total_worth) }}</div>
-    </div>
-</div>
-
-<!-- ADD STOCK FORM -->
-<div class="gs-card">
-    <h2>➕ নতুন Gold Stock এন্ট্রি করুন</h2>
-    <form method="POST" action="{{ url_for('gold_stock') }}">
-        
-        <!-- অলংকার সাধারণ তথ্য -->
-        <div class="section-divider">অলংকার বিবরণ</div>
-        <div class="form-grid-3">
-            <div class="gs-field">
-                <label>QS / Serial Code</label>
-                <input type="text" name="serial_no" placeholder="যেমন: QS-2026-0001 (ফাঁকা রাখলে অটো)">
+    <!-- ══════════ STATS METRICS ══════════ -->
+    <section class="gs-stats">
+        <div class="gs-stat-card">
+            <div class="card-top">
+                <span class="lbl" data-i18n="gs_stat_items">মোট আইটেম রেকর্ড</span>
+                <span class="icon">💎</span>
             </div>
-            <div class="gs-field">
-                <label>অলংকারের নাম (Item Name) <b style="color:red">*</b></label>
-                <input type="text" name="item_name" placeholder="যেমন: ২২ ক্যারেট চেইন, নেকলেস, আংটি" required>
+            <div class="val">{{ total_items }} টি</div>
+            <span class="subtext">সর্বমোট স্বর্ণের পদমর্যাদা তালিকা</span>
+        </div>
+        <div class="gs-stat-card qty">
+            <div class="card-top">
+                <span class="lbl" data-i18n="gs_stat_qty">মোট মজুদ সংখ্যা (Qty)</span>
+                <span class="icon">📦</span>
             </div>
-            <div class="gs-field">
-                <label>ক্যারেট (Karat) <b style="color:red">*</b></label>
-                <select name="karat" required>
-                    <option value="22K">22K</option>
-                    <option value="21K">21K</option>
-                    <option value="18K">18K</option>
-                    <option value="24K">24K</option>
-                </select>
+            <div class="val">{{ total_qty }} পিস</div>
+            <span class="subtext">শোরুমে প্রস্তুত অলংকার সংখ্যা</span>
+        </div>
+        <div class="gs-stat-card amber">
+            <div class="card-top">
+                <span class="lbl" data-i18n="gs_stat_weight">মোট স্বর্ণের ওজন</span>
+                <span class="icon">⚖️</span>
+            </div>
+            <div class="val">{{ "%.3f"|format(total_weight) }} g</div>
+            {% set total_bhori_equiv = total_weight / 11.664 %}
+            <span class="subtext">≈ {{ "%.2f"|format(total_bhori_equiv) }} ভরি বিশুদ্ধ স্টক</span>
+        </div>
+        <div class="gs-stat-card green">
+            <div class="card-top">
+                <span class="lbl" data-i18n="gs_stat_worth">মোট সম্পদ মূল্যায়ন</span>
+                <span class="icon">💰</span>
+            </div>
+            <div class="val">৳ {{ "{:,.0f}".format(total_worth) }}</div>
+            <span class="subtext">মজুদ স্বর্ণের বর্তমান ক্রয়মূল্য</span>
+        </div>
+    </section>
+
+    <!-- ══════════ NEW STOCK ENTRY FORM ══════════ -->
+    <section class="gs-card" id="newStockSection">
+        <div class="gs-card-header">
+            <h2>✨ নতুন স্বর্ণ স্টক এন্ট্রি করুন (Add Jewelry Stock)</h2>
+            <span style="font-size: 12px; color: var(--gold-dark); font-weight: 700;">স্বয়ংক্রিয় QS কোড ও অনুভূমিক জুয়েলারি ট্যাগ জেনারেট হবে</span>
+        </div>
+
+        <!-- Quick Item Presets -->
+        <div style="margin-bottom: 6px;">
+            <span style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">দ্রুত অলংকার নির্বাচন:</span>
+        </div>
+        <div class="preset-items">
+            <button type="button" class="preset-btn" onclick="selectPreset('২২ ক্যারেট চেইন (Chain)')">📿 ২২ ক্যারেট চেইন</button>
+            <button type="button" class="preset-btn" onclick="selectPreset('২২ ক্যারেট আংটি (Ring)')">💍 ২২ ক্যারেট আংটি</button>
+            <button type="button" class="preset-btn" onclick="selectPreset('২২ ক্যারেট নেকলেস (Necklace)')">👑 ২২ ক্যারেট নেকলেস</button>
+            <button type="button" class="preset-btn" onclick="selectPreset('২১ ক্যারেট চুড়ি / বালা (Bangle)')">🪙 ২১ ক্যারেট চুড়ি/বালা</button>
+            <button type="button" class="preset-btn" onclick="selectPreset('১৮ ক্যারেট কানের দুল (Earring)')">💎 ১৮ ক্যারেট কানের দুল</button>
+            <button type="button" class="preset-btn" onclick="selectPreset('২২ ক্যারেট লকেট (Pendant)')">⚜️ ২২ ক্যারেট লকেট</button>
+            <button type="button" class="preset-btn" onclick="selectPreset('২৪ ক্যারেট গোল্ড বার (Gold Bar)')">🪙 ২৪ ক্যারেট গোল্ড বার</button>
+        </div>
+
+        <form method="POST" action="{{ url_for('gold_stock') }}">
+            
+            <!-- অলংকার সাধারণ তথ্য -->
+            <div class="section-divider">১. অলংকার বিবরণ ও হলমার্ক</div>
+            <div class="form-grid-3">
+                <div class="gs-field">
+                    <label>QS / Serial Code</label>
+                    <input type="text" name="serial_no" id="stk_serial" placeholder="যেমন: QS-2026-0001 (ফাঁকা রাখলে অটো)">
+                </div>
+                <div class="gs-field">
+                    <label>অলংকারের নাম (Item Name) <b style="color:#dc2626">*</b></label>
+                    <input type="text" name="item_name" id="stk_item_name" placeholder="যেমন: ২২ ক্যারেট চেইন, নেকলেস, আংটি" required>
+                </div>
+                <div class="gs-field">
+                    <label>ক্যারেট মান (Karat Hallmark) <b style="color:#dc2626">*</b></label>
+                    <select name="karat" id="stk_karat" required>
+                        <option value="22K" selected>22K (৯১৬ হলমার্ক)</option>
+                        <option value="21K">21K (৮৭৫ হলমার্ক)</option>
+                        <option value="18K">18K (৭৫০ হলমার্ক)</option>
+                        <option value="24K">24K (৯৯৯ পাকা সোনা)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ওজন সিস্টেম (ভরি, আনা, রতি, পয়েন্ট) -->
+            <div class="section-divider">২. ঐতিহ্যবাহী ওজন পদ্ধতি — ভরি · আনা · রতি · পয়েন্ট</div>
+            <div class="weight-grid-4">
+                <div class="weight-box-item">
+                    <span class="u-label">ভরি (Bhori)</span>
+                    <input type="number" name="bhori" id="stk_bhori" min="0" step="1" value="0" oninput="syncFromBhori()">
+                    <span class="sub-note">১ ভরি = ১৬ আনা</span>
+                </div>
+                <div class="weight-box-item">
+                    <span class="u-label">আনা (Ana)</span>
+                    <input type="number" name="ana" id="stk_ana" min="0" max="15" step="1" value="0" oninput="syncFromBhori()">
+                    <span class="sub-note">১ আনা = ৬ রতি</span>
+                </div>
+                <div class="weight-box-item">
+                    <span class="u-label">রতি (Rati)</span>
+                    <input type="number" name="rati" id="stk_rati" min="0" max="5" step="1" value="0" oninput="syncFromBhori()">
+                    <span class="sub-note">১ রতি = ৬ পয়েন্ট</span>
+                </div>
+                <div class="weight-box-item">
+                    <span class="u-label">পয়েন্ট (Point)</span>
+                    <input type="number" name="point" id="stk_point" min="0" max="5" step="1" value="0" oninput="syncFromBhori()">
+                    <span class="sub-note">সর্বোচ্চ ৫ পয়েন্ট</span>
+                </div>
+            </div>
+
+            <!-- ওজন সরাসরি গ্রামে দেওয়ার অপশন সহ রূপান্তর -->
+            <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+                <span style="font-size: 11px; color: var(--text-muted);">অথবা ডিজিটাল স্কেলে সরাসরি গ্রাম ওজন:</span>
+                <input type="number" step="0.0001" min="0" id="direct_gram_input" placeholder="গ্রাম ওজন দিন" style="padding: 5px 10px; border: 1px solid #d5cfc5; border-radius: 6px; font-size: 12px; width: 130px;" oninput="syncFromGram(this.value)">
+            </div>
+
+            <!-- লাইভ গোল্ডেন ক্যালকুলেশন রিবন -->
+            <input type="hidden" name="weight" id="stk_weight_hidden" value="0">
+            <div class="live-calc-strip">
+                <div class="strip-col">
+                    <div class="lbl">⚖️ মোট স্বর্ণ ওজন (গ্রাম)</div>
+                    <div class="val gold" id="disp_gram">0.0000 g</div>
+                </div>
+                <div class="strip-col">
+                    <div class="lbl">🪙 মোট ভরি সমতুল্য</div>
+                    <div class="val" id="disp_bhori">0.0000 ভরি</div>
+                </div>
+                <div class="strip-col">
+                    <div class="lbl">📜 সনাতন খাতা বিবরণ</div>
+                    <div class="val" id="disp_detail">০ ভরি</div>
+                </div>
+                <div class="strip-col">
+                    <div class="lbl">💰 আনুমানিক ক্রয়মূল্য</div>
+                    <div class="val gold" id="disp_calc_cost">৳ 0</div>
+                </div>
+            </div>
+
+            <!-- পরিমাণ ও ক্রয় রেট -->
+            <div class="section-divider">৩. পরিমাণ ও ক্রয় রেট</div>
+            <div class="form-grid-2">
+                <div class="gs-field">
+                    <label>পরিমাণ (Quantity / পিস) <b style="color:#dc2626">*</b></label>
+                    <input type="number" name="quantity" id="stk_qty" value="1" min="1" required oninput="calcTotalValue()">
+                </div>
+                <div class="gs-field">
+                    <label>ক্রয় রেট (৳ প্রতি গ্রাম) <b style="color:#dc2626">*</b></label>
+                    <input type="number" step="0.01" name="purchase_rate" id="stk_rate" placeholder="যেমন: 15860 (প্রতি গ্রাম)" required oninput="calcTotalValue()">
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 18px; flex-wrap: wrap; gap: 12px;">
+                <div id="liveTotalText" style="font-size: 13px; color: #047857; font-weight: 800;"></div>
+                <button type="submit" class="btn-save-stock">
+                    💾 স্টক সংরক্ষণ করুন (Save Stock)
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <!-- ══════════ STOCK INVENTORY TABLE ══════════ -->
+    <section class="gs-card">
+        <div class="gs-card-header">
+            <h2>📋 Gold Stock তালিকা (অনুভূমিক QR / QS কোড ও ট্যাগ খাতা)</h2>
+            <span id="stockCountBadge" style="background: var(--gold-light); color: var(--gold-dark); border: 1px solid var(--gold-border); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 800;">
+                মোট রেকর্ড: {{ stocks|length }} টি
+            </span>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="gs-filter-bar">
+            <div class="filter-pills-row">
+                <button type="button" class="filter-btn active" onclick="filterByKarat('ALL')">সব ক্যারেট</button>
+                <button type="button" class="filter-btn" onclick="filterByKarat('22K')">22K সোনা</button>
+                <button type="button" class="filter-btn" onclick="filterByKarat('21K')">21K সোনা</button>
+                <button type="button" class="filter-btn" onclick="filterByKarat('18K')">18K সোনা</button>
+                <button type="button" class="filter-btn" onclick="filterByKarat('24K')">24K পাকা সোনা</button>
+            </div>
+            <div class="gs-search-box">
+                <span>🔍</span>
+                <input type="text" id="tableSearch" placeholder="আইটেম, QS কোড বা ক্যারেট খুঁজুন..." oninput="filterStockTable()">
             </div>
         </div>
 
-        <!-- ওজন সিস্টেম (ভরি, আনা, রতি, পয়েন্ট) -->
-        <div class="section-divider">ওজন — ভরি · আনা · রতি · পয়েন্ট (স্বয়ংক্রিয় গ্রাম রূপান্তর)</div>
-        <div class="weight-grid-4">
-            <div class="weight-box-item">
-                <span class="u-label">ভরি</span>
-                <input type="number" name="bhori" id="stk_bhori" min="0" step="1" value="0" oninput="syncFromBhori()">
-                <span class="sub-note">১ ভরি = ১৬ আনা</span>
-            </div>
-            <div class="weight-box-item">
-                <span class="u-label">আনা</span>
-                <input type="number" name="ana" id="stk_ana" min="0" max="15" step="1" value="0" oninput="syncFromBhori()">
-                <span class="sub-note">১ আনা = ৬ রতি</span>
-            </div>
-            <div class="weight-box-item">
-                <span class="u-label">রতি</span>
-                <input type="number" name="rati" id="stk_rati" min="0" max="5" step="1" value="0" oninput="syncFromBhori()">
-                <span class="sub-note">১ রতি = ৬ পয়েন্ট</span>
-            </div>
-            <div class="weight-box-item">
-                <span class="u-label">পয়েন্ট</span>
-                <input type="number" name="point" id="stk_point" min="0" max="5" step="1" value="0" oninput="syncFromBhori()">
-                <span class="sub-note">সর্বোচ্চ ৫</span>
-            </div>
-        </div>
+        <div class="table-wrap">
+            <table id="stockTable">
+                <thead>
+                    <tr>
+                        <th>QR / QS Code & Tag</th>
+                        <th>Item Name</th>
+                        <th>Karat</th>
+                        <th>ওজন (ভরি / আনা / গ্রাম)</th>
+                        <th>Qty</th>
+                        <th>Purchase Rate</th>
+                        <th>Total Value</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for stock in stocks %}
+                    {% set qs_no = stock['serial_no'] or ("QS-2026-%04d"|format(stock['id'])) %}
+                    {# Normalize any old GS- prefix to QS- #}
+                    {% if qs_no.startswith('GS-') %}
+                        {% set qs_no = 'QS-' ~ qs_no[3:] %}
+                    {% endif %}
+                    {% set qr_data = "THE AMIN JEWELLERS
+Item: " ~ stock['item_name'] ~ "
+QS Code: " ~ qs_no ~ "
+Karat: " ~ stock['karat'] ~ "
+Weight: " ~ stock['weight'] ~ "g
+Qty: " ~ stock['quantity'] ~ "
+Total Value: BDT " ~ "{:,.0f}".format(stock['total_value']) %}
+                    {% set qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" ~ (qr_data|urlencode) %}
+                    
+                    {% set approx_b = (stock['weight'] / 11.664)|int %}
+                    {% set approx_a = (((stock['weight'] / 11.664) - approx_b) * 16)|int %}
+                    {% set wt_str = "%.4f"|format(stock['weight']) ~ " g (" ~ approx_b ~ " ভরি " ~ approx_a ~ " আনা)" %}
 
-        <!-- লাইভ গ্রাম ও ভরি ডিসপ্লে স্ক্রিপ্ট -->
-        <input type="hidden" name="weight" id="stk_weight_hidden" value="0">
-        <div class="live-calc-strip">
-            <div class="strip-col">
-                <div class="lbl">মোট স্বর্ণের ওজন (গ্রাম)</div>
-                <div class="val" id="disp_gram">0.0000 g</div>
-            </div>
-            <div class="strip-col">
-                <div class="lbl">মোট ভরি সমতুল্য</div>
-                <div class="val" id="disp_bhori">0.0000 ভরি</div>
-            </div>
-            <div class="strip-col">
-                <div class="lbl">বিস্তারিত ওজন প্রকাশ</div>
-                <div class="val" id="disp_detail">—</div>
-            </div>
-        </div>
-
-        <!-- পরিমাণ ও ক্রয় রেট -->
-        <div class="section-divider">পরিমাণ ও রেট</div>
-        <div class="form-grid-2">
-            <div class="gs-field">
-                <label>পরিমাণ (Quantity / পিস) <b style="color:red">*</b></label>
-                <input type="number" name="quantity" id="stk_qty" value="1" min="1" required oninput="calcTotalValue()">
-            </div>
-            <div class="gs-field">
-                <label>ক্রয় রেট (৳ প্রতি গ্রাম) <b style="color:red">*</b></label>
-                <input type="number" step="0.01" name="purchase_rate" id="stk_rate" placeholder="যেমন: 15860 (প্রতি গ্রাম)" required oninput="calcTotalValue()">
-            </div>
-        </div>
-
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; flex-wrap: wrap; gap: 10px;">
-            <div id="liveTotalText" style="font-size: 13px; color: #059669; font-weight: 800;"></div>
-            <button type="submit" class="btn-save-stock">💾 স্টক যোগ করুন</button>
-        </div>
-    </form>
-</div>
-
-<!-- STOCK LIST CARD -->
-<div class="gs-card">
-    <div class="gs-filter-bar">
-        <h2>📋 Gold Stock তালিকা (QS Code ও কিউআর কোড ট্যাগ)</h2>
-        <div class="gs-search-box">
-            <span>🔍</span>
-            <input type="text" id="tableSearch" placeholder="আইটেম, QS কোড বা ক্যারেট খুঁজুন..." oninput="filterStockTable()">
-        </div>
-    </div>
-
-    <div class="table-wrap">
-        <table id="stockTable">
-            <thead>
-                <tr>
-                    <th>QS Code</th>
-                    <th>QR Code & Tag</th>
-                    <th>Item Name</th>
-                    <th>Karat</th>
-                    <th>ওজন (ভরি / আনা / গ্রাম)</th>
-                    <th>Qty</th>
-                    <th>Purchase Rate</th>
-                    <th>Total Value</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for stock in stocks %}
-                {% set qs_no = stock['serial_no'] or ("QS-2026-%04d"|format(stock['id'])) %}
-                {# Replace old GS prefix with QS if needed #}
-                {% if qs_no.startswith('GS-') %}
-                    {% set qs_no = 'QS-' ~ qs_no[3:] %}
-                {% endif %}
-                {% set qr_data = "THE AMIN JEWELLERS\nItem: " ~ stock['item_name'] ~ "\nQS Code: " ~ qs_no ~ "\nKarat: " ~ stock['karat'] ~ "\nWeight: " ~ stock['weight'] ~ "g\nQty: " ~ stock['quantity'] ~ "\nTotal Value: BDT " ~ "{:,.0f}".format(stock['total_value']) %}
-                {% set qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" ~ (qr_data|urlencode) %}
-                <tr>
-                    <td><span class="qs-badge">{{ qs_no }}</span></td>
-                    <td>
-                        <div class="qr-container">
-                            <img class="qr-thumb" src="{{ qr_url }}" alt="QR Code" title="ট্যাগ প্রিভিউ ও প্রিন্ট করতে ক্লিক করুন" onclick="showQrTagModal('{{ qs_no }}', '{{ stock.item_name|e }}', '{{ stock.karat }}', '{{ stock.weight }}', '{{ stock.quantity }}', '{{ '{:,.0f}'.format(stock.total_value) }}', '{{ qr_url }}')">
-                            <button type="button" class="btn-qr-view" onclick="showQrTagModal('{{ qs_no }}', '{{ stock.item_name|e }}', '{{ stock.karat }}', '{{ stock.weight }}', '{{ stock.quantity }}', '{{ '{:,.0f}'.format(stock.total_value) }}', '{{ qr_url }}')">
-                                🏷️ ট্যাগ
-                            </button>
-                        </div>
-                    </td>
-                    <td><strong>{{ stock["item_name"] }}</strong></td>
-                    <td>
-                        {% if stock["karat"] == '24K' %}
-                            <span class="karat-pill k-24">{{ stock["karat"] }}</span>
-                        {% elif stock["karat"] == '22K' %}
-                            <span class="karat-pill k-22">{{ stock["karat"] }}</span>
-                        {% elif stock["karat"] == '21K' %}
-                            <span class="karat-pill k-21">{{ stock["karat"] }}</span>
-                        {% else %}
-                            <span class="karat-pill k-18">{{ stock["karat"] }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div class="wt-pills">
-                            {% set has_traditional = (stock.keys()|list and 'bhori' in stock.keys()|list and (stock['bhori'] or stock['ana'] or stock['rati'] or stock['point'])) %}
-                            {% if has_traditional %}
-                                {% if stock['bhori'] %}<span>{{ stock['bhori']|int }} ভরি</span>{% endif %}
-                                {% if stock['ana'] %}<span>{{ stock['ana']|int }} আনা</span>{% endif %}
-                                {% if stock['rati'] %}<span>{{ stock['rati']|int }} রতি</span>{% endif %}
-                                {% if stock['point'] %}<span>{{ stock['point']|int }} পয়েন্ট</span>{% endif %}
+                    <tr data-karat="{{ stock['karat'] }}">
+                        <td>
+                            <!-- ── HORIZONTAL QR / QS CODE & TAG BUTTON ── -->
+                            <div class="qr-qs-tag-horizontal">
+                                <div class="qr-thumb-wrap">
+                                    <img class="qr-thumb" src="{{ qr_url }}" alt="QR Code" title="ট্যাগ প্রিভিউ ও প্রিন্ট করতে ক্লিক করুন" onclick="showQrTagModal('{{ qs_no }}', '{{ stock.item_name|e }}', '{{ stock.karat }}', '{{ stock.weight }}', '{{ wt_str }}', '{{ stock.quantity }}', '{{ '{:,.0f}'.format(stock.total_value) }}', '{{ qr_url }}')">
+                                </div>
+                                <div class="qr-qs-data">
+                                    <span class="qs-badge">{{ qs_no }}</span>
+                                    <button type="button" class="btn-qr-view" onclick="showQrTagModal('{{ qs_no }}', '{{ stock.item_name|e }}', '{{ stock.karat }}', '{{ stock.weight }}', '{{ wt_str }}', '{{ stock.quantity }}', '{{ '{:,.0f}'.format(stock.total_value) }}', '{{ qr_url }}')">
+                                        🏷️ অনুভূমিক ট্যাগ
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                        <td><strong>{{ stock["item_name"] }}</strong></td>
+                        <td>
+                            {% if stock["karat"] == '24K' %}
+                                <span class="karat-pill k-24">{{ stock["karat"] }}</span>
+                            {% elif stock["karat"] == '22K' %}
+                                <span class="karat-pill k-22">{{ stock["karat"] }}</span>
+                            {% elif stock["karat"] == '21K' %}
+                                <span class="karat-pill k-21">{{ stock["karat"] }}</span>
                             {% else %}
-                                {# Approximate conversion if stored only in grams #}
-                                {% set approx_b = (stock['weight'] / 11.664)|int %}
-                                {% set approx_a = (((stock['weight'] / 11.664) - approx_b) * 16)|int %}
-                                {% if approx_b %}<span>{{ approx_b }} ভরি</span>{% endif %}
-                                {% if approx_a %}<span>{{ approx_a }} আনা</span>{% endif %}
+                                <span class="karat-pill k-18">{{ stock["karat"] }}</span>
                             {% endif %}
-                        </div>
-                        <span class="wt-gram-sub"><strong>{{ "%.4f"|format(stock["weight"]) }}</strong> g</span>
-                    </td>
-                    <td><span style="background: #f3f4f6; padding: 3px 8px; border-radius: 6px; font-weight: 700;">{{ stock["quantity"] }}</span></td>
-                    <td><span class="val-rate">৳ {{ "{:,.2f}".format(stock["purchase_rate"]) }}</span></td>
-                    <td><span class="val-main">৳ {{ "{:,.0f}".format(stock["total_value"]) }}</span></td>
-                    <td>
-                        <a href="{{ url_for('delete_gold_stock', stock_id=stock['id']) }}" class="btn-del" onclick="return confirm('{{ qs_no }} - {{ stock.item_name|e }} স্টক থেকে মুছে ফেলবেন?')">
-                            🗑️ Delete
-                        </a>
-                    </td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td colspan="9" style="text-align:center; padding: 40px; color: #9ca3af;">
-                        💎 এখনও কোনো Gold Stock যুক্ত করা হয়নি। উপরের ফর্ম থেকে স্টক যুক্ত করুন।
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                        </td>
+                        <td>
+                            <div class="wt-pills">
+                                {% set has_traditional = (stock.keys()|list and 'bhori' in stock.keys()|list and (stock['bhori'] or stock['ana'] or stock['rati'] or stock['point'])) %}
+                                {% if has_traditional %}
+                                    {% if stock['bhori'] %}<span>{{ stock['bhori']|int }} ভরি</span>{% endif %}
+                                    {% if stock['ana'] %}<span>{{ stock['ana']|int }} আনা</span>{% endif %}
+                                    {% if stock['rati'] %}<span>{{ stock['rati']|int }} রতি</span>{% endif %}
+                                    {% if stock['point'] %}<span>{{ stock['point']|int }} পয়েন্ট</span>{% endif %}
+                                {% else %}
+                                    {% if approx_b %}<span>{{ approx_b }} ভরি</span>{% endif %}
+                                    {% if approx_a %}<span>{{ approx_a }} আনা</span>{% endif %}
+                                {% endif %}
+                            </div>
+                            <span class="wt-gram-sub"><strong>{{ "%.4f"|format(stock["weight"]) }}</strong> g</span>
+                        </td>
+                        <td><span style="background: #f7f4ee; border: 1px solid #ede8df; padding: 3px 9px; border-radius: 6px; font-weight: 800;">{{ stock["quantity"] }}</span></td>
+                        <td><span class="val-rate">৳ {{ "{:,.2f}".format(stock["purchase_rate"]) }}</span></td>
+                        <td><span class="val-main">৳ {{ "{:,.0f}".format(stock["total_value"]) }}</span></td>
+                        <td style="text-align: right;">
+                            <a href="{{ url_for('delete_gold_stock', stock_id=stock['id']) }}" class="btn-del" onclick="return confirm('{{ qs_no }} - {{ stock.item_name|e }} স্টক থেকে মুছে ফেলবেন?')">
+                                🗑️ Delete
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8" style="text-align:center; padding: 45px; color: #9ca3af;">
+                            💎 এখনও কোনো Gold Stock যুক্ত করা হয়নি। উপরের ফর্ম থেকে স্টক যুক্ত করুন।
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
 </div>
 
-<!-- ══════════ JEWELLERY QR TAG MODAL (PRINT READY) ══════════ -->
+<!-- ══════════ TRUE HORIZONTAL JEWELLERY PRICE & QR TAG MODAL ══════════ -->
 <div class="modal-overlay" id="qrTagModal">
     <div class="qr-tag-card">
         <button class="close-btn" onclick="closeQrTagModal()">✕</button>
-        <h3 style="margin: 0; color: #1e1b4b; font-size: 16px;">🏷️ জুয়েলারি অলংকার প্রাইস ও QR ট্যাগ</h3>
         
-        <div class="tag-preview" id="tagPrintArea">
-            <div class="tag-shop">✨ THE AMIN JEWELLERS ✨</div>
-            <div class="tag-qs" id="modal_qs_no">QS-2026-0001</div>
-            <img class="tag-qr-large" id="modal_qr_img" src="" alt="QR Code Tag">
-            <div class="tag-item-name" id="modal_item_name">22K Gold Chain</div>
-            <div class="tag-item-details">
-                <span>ক্যারেট: <strong id="modal_karat">22K</strong></span>
-                <span>•</span>
-                <span>ওজন: <strong id="modal_weight">0</strong> g</span>
-                <span>•</span>
-                <span>পরিমাণ: <strong id="modal_qty">1</strong> টি</span>
+        <div class="modal-header-row">
+            <h3>🏷️ অনুভূমিক জুয়েলারি বারকোড ও প্রাইজ ট্যাগ</h3>
+            <span class="tag-mode-pill">↔️ Horizontal Barbell Tag</span>
+        </div>
+        
+        <!-- ── HORIZONTAL BARBELL TAG PREVIEW ── -->
+        <div class="tag-horizontal-wrap" id="tagPrintArea">
+            
+            <!-- Left Flap: QR Code & QS Code -->
+            <div class="tag-left-flap">
+                <img class="tag-qr-large" id="modal_qr_img" src="" alt="QR Code Tag">
+                <span class="tag-qs-code" id="modal_qs_no">QS-2026-0001</span>
+                <span class="tag-scan-hint">SCAN TO VERIFY</span>
             </div>
-            <div class="tag-price" id="modal_price">৳ 0</div>
+
+            <!-- Center String / Bridge Divider -->
+            <div class="tag-barbell-bridge">
+                <div class="tag-string-hole">●</div>
+                <div class="tag-bridge-line"></div>
+                <div class="tag-string-hole">●</div>
+            </div>
+
+            <!-- Right Flap: Store, Item, Hallmark, Weight & Price -->
+            <div class="tag-right-flap">
+                <div class="tag-store-header">
+                    <div class="tag-store-name">✨ THE AMIN JEWELLERS ✨</div>
+                    <div class="tag-store-location">বন্দরটিলা, চট্টগ্রাম</div>
+                </div>
+
+                <div class="tag-item-title" id="modal_item_name">22K Gold Chain</div>
+
+                <div class="tag-specs-horizontal">
+                    <div class="tag-spec-item">
+                        <span class="s-lbl">হলমার্ক</span>
+                        <span class="s-val karat" id="modal_karat">22K</span>
+                    </div>
+                    <div class="tag-spec-item">
+                        <span class="s-lbl">ওজন</span>
+                        <span class="s-val" id="modal_weight">0.0000 g</span>
+                    </div>
+                    <div class="tag-spec-item">
+                        <span class="s-lbl">পরিমাণ</span>
+                        <span class="s-val" id="modal_qty">1 পিস</span>
+                    </div>
+                </div>
+
+                <div class="tag-price-banner">
+                    <span class="p-lbl">মূল্য / Price</span>
+                    <span class="p-val" id="modal_price">৳ 0</span>
+                </div>
+            </div>
+
         </div>
 
         <div class="modal-actions">
-            <button type="button" class="btn-print" onclick="window.print()">🖨️ প্রিন্ট ট্যাগ (Print Tag)</button>
-            <button type="button" class="btn-del" style="background:#f3f4f6; color:#4b5563; border-color:#d1d5db; padding: 10px 18px;" onclick="closeQrTagModal()">বন্ধ করুন</button>
+            <button type="button" class="btn-print" onclick="window.print()">
+                🖨️ প্রিন্ট ট্যাগ (Print Horizontal Tag)
+            </button>
+            <button type="button" class="btn-del" style="background:#f3f4f6; color:#4b5563; border-color:#d1d5db; padding: 10px 18px;" onclick="closeQrTagModal()">
+                বন্ধ করুন
+            </button>
         </div>
     </div>
 </div>
@@ -363,6 +1256,20 @@ tbody tr:hover td { background: #fbfbfd; }
 
 {% block scripts %}
 <script>
+// Preset quick item selection
+function selectPreset(name) {
+    document.getElementById('stk_item_name').value = name;
+    if (name.includes('২২') || name.includes('22')) {
+        document.getElementById('stk_karat').value = '22K';
+    } else if (name.includes('২১') || name.includes('21')) {
+        document.getElementById('stk_karat').value = '21K';
+    } else if (name.includes('১৮') || name.includes('18')) {
+        document.getElementById('stk_karat').value = '18K';
+    } else if (name.includes('২৪') || name.includes('24')) {
+        document.getElementById('stk_karat').value = '24K';
+    }
+}
+
 // 1 ভরি = 16 আনা = 96 রতি = 576 পয়েন্ট = 11.664 গ্রাম
 function syncFromBhori() {
     const b = parseFloat(document.getElementById('stk_bhori').value) || 0;
@@ -374,8 +1281,46 @@ function syncFromBhori() {
     const gram = totalBhori * 11.664;
 
     document.getElementById('stk_weight_hidden').value = gram.toFixed(4);
+    document.getElementById('direct_gram_input').value = gram > 0 ? gram.toFixed(4) : '';
     document.getElementById('disp_gram').textContent = gram.toFixed(4) + ' g';
     document.getElementById('disp_bhori').textContent = totalBhori.toFixed(4) + ' ভরি';
+
+    let parts = [];
+    if (b > 0) parts.push(b + ' ভরি');
+    if (a > 0) parts.push(a + ' আনা');
+    if (r > 0) parts.push(r + ' রতি');
+    if (p > 0) parts.push(p + ' পয়েন্ট');
+    document.getElementById('disp_detail').textContent = parts.length > 0 ? parts.join(' ') : '০ ভরি';
+
+    calcTotalValue();
+}
+
+function syncFromGram(val) {
+    const g = parseFloat(val) || 0;
+    if (g <= 0) {
+        document.getElementById('stk_bhori').value = 0;
+        document.getElementById('stk_ana').value = 0;
+        document.getElementById('stk_rati').value = 0;
+        document.getElementById('stk_point').value = 0;
+        syncFromBhori();
+        return;
+    }
+    const totalB = g / 11.664;
+    const b = Math.floor(totalB);
+    const remA = (totalB - b) * 16.0;
+    const a = Math.floor(remA);
+    const remR = (remA - a) * 6.0;
+    const r = Math.floor(remR);
+    const p = Math.round((remR - r) * 6.0);
+
+    document.getElementById('stk_bhori').value = b;
+    document.getElementById('stk_ana').value = a;
+    document.getElementById('stk_rati').value = r;
+    document.getElementById('stk_point').value = p;
+
+    document.getElementById('stk_weight_hidden').value = g.toFixed(4);
+    document.getElementById('disp_gram').textContent = g.toFixed(4) + ' g';
+    document.getElementById('disp_bhori').textContent = totalB.toFixed(4) + ' ভরি';
 
     let parts = [];
     if (b > 0) parts.push(b + ' ভরি');
@@ -393,20 +1338,24 @@ function calcTotalValue() {
     const r = parseFloat(document.getElementById('stk_rate').value) || 0;
     const tot = w * q * r;
     const display = document.getElementById('liveTotalText');
+    const stripDisplay = document.getElementById('disp_calc_cost');
     if (tot > 0) {
-        display.textContent = '💡 আনুমানিক মোট ক্রয়মূল্য: ৳ ' + tot.toLocaleString('en-BD', {maximumFractionDigits: 2});
+        const formatted = '৳ ' + tot.toLocaleString('en-BD', {maximumFractionDigits: 2});
+        display.textContent = '💡 আনুমানিক মোট ক্রয়মূল্য: ' + formatted;
+        stripDisplay.textContent = formatted;
     } else {
         display.textContent = '';
+        stripDisplay.textContent = '৳ 0';
     }
 }
 
-function showQrTagModal(qsNo, itemName, karat, weight, qty, totalValue, qrUrl) {
+function showQrTagModal(qsNo, itemName, karat, weightRaw, wtDisplay, qty, totalValue, qrUrl) {
     document.getElementById('modal_qs_no').textContent = qsNo;
     document.getElementById('modal_item_name').textContent = itemName;
     document.getElementById('modal_karat').textContent = karat;
-    document.getElementById('modal_weight').textContent = weight;
-    document.getElementById('modal_qty').textContent = qty;
-    document.getElementById('modal_price').textContent = 'মূল্য: ৳ ' + totalValue;
+    document.getElementById('modal_weight').textContent = wtDisplay || (weightRaw + ' g');
+    document.getElementById('modal_qty').textContent = qty + ' পিস';
+    document.getElementById('modal_price').textContent = '৳ ' + totalValue;
     document.getElementById('modal_qr_img').src = qrUrl;
     document.getElementById('qrTagModal').classList.add('open');
 }
@@ -420,19 +1369,48 @@ document.getElementById('qrTagModal').addEventListener('click', function(e) {
     if (e.target === this) closeQrTagModal();
 });
 
-// Close on escape
+// Close on escape key
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeQrTagModal();
 });
+
+// Karat Filter Pills
+let currentKaratFilter = 'ALL';
+function filterByKarat(karat) {
+    currentKaratFilter = karat;
+    document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.remove('active');
+        if (b.textContent.includes(karat) || (karat === 'ALL' && b.textContent.includes('সব'))) {
+            b.classList.add('active');
+        }
+    });
+    filterStockTable();
+}
 
 // Table live search filter
 function filterStockTable() {
     const q = document.getElementById('tableSearch').value.toLowerCase();
     const rows = document.querySelectorAll('#stockTable tbody tr');
+    let visibleCount = 0;
+
     rows.forEach(row => {
         const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(q) ? '' : 'none';
+        const rowKarat = row.getAttribute('data-karat') || '';
+        const matchesQuery = text.includes(q);
+        const matchesKarat = currentKaratFilter === 'ALL' || rowKarat === currentKaratFilter;
+
+        if (matchesQuery && matchesKarat) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
     });
+
+    const badge = document.getElementById('stockCountBadge');
+    if (badge) {
+        badge.textContent = 'দেখাচ্ছে: ' + visibleCount + ' টি';
+    }
 }
 </script>
 {% endblock %}

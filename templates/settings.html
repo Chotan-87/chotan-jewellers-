@@ -18,14 +18,14 @@
 {% endblock %}
 
 {% block content %}
-<h1>?? Settings</h1>
+<h1>Settings</h1>
 
 <div class="info-box">
-    ?? You are logged in as <strong>admin</strong>. Use the form below to change your password.
+    You are logged in as <strong>admin</strong>. Use the form below to change your password.
 </div>
 
 <div class="settings-card">
-    <h3>?? Change Password</h3>
+    <h3>Change Password</h3>
 
     {% if message %}
     <div class="msg-ok">? {{ message }}</div>
@@ -47,7 +47,7 @@
             <label>Confirm New Password</label>
             <input type="password" name="confirm_password" placeholder="Repeat new password" required>
         </div>
-        <button type="submit" class="btn-save">?? Update Password</button>
+        <button type="submit" class="btn-save">Update Password</button>
     </form>
 </div>
 {% endblock %}

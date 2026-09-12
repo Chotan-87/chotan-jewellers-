@@ -44,6 +44,7 @@
                         <th>Karat</th>
                         <th>Weight</th>
                         <th>Total</th>
+                        <th>Invoice</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -56,10 +57,11 @@
                         <td>{{ invoice['karat'] }}</td>
                         <td>{{ invoice['weight'] }} g</td>
                         <td>৳ {{ '%.2f'|format(invoice['grand_total']) }}</td>
+                        <td><a href="{{ url_for('invoice_detail', invoice_id=invoice['id']) }}">View / Print</a></td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="7">No invoices have been created yet.</td>
+                        <td colspan="8">No invoices have been created yet.</td>
                     </tr>
                 {% endfor %}
                 </tbody>

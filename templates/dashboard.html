@@ -1,57 +1,29 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Amin Jewellers - Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-<header class="topbar">
-    <div>
-        <h2>THE AMIN JEWELLERS</h2>
-        <span>বন্দরটিলা, চট্টগ্রাম</span>
+{% extends "base.html" %}
+
+{% block title %}The Amin Jewellers - Dashboard{% endblock %}
+
+{% block content %}
+<h1 data-i18n="db_title">Dashboard</h1>
+<div class="cards">
+    <div class="card">
+        <h3 data-i18n="db_stock_card">Gold Stock Items</h3>
+        <strong>{{ stock_count }}</strong>
     </div>
-    <div>👤 {{ username }} &nbsp; <a href="/logout">Logout</a></div>
-</header>
-
-<div class="dashboard">
-    <aside class="sidebar">
-        <h3>MENU</h3>
-        <a href="/dashboard">🏠 Dashboard</a>
-        <a href="/gold-stock">💎 Gold Stock</a>
-        <a href="/loans">💰 Loan Entry</a>
-        <a href="/buy-now">🛍️ Buy Now Order</a>
-        <a href="/customers">👥 Customer</a>
-        <a href="/calculator">🧮 Calculator</a>
-        <a href="/invoices">🧾 Invoices</a>
-    </aside>
-
-    <main class="content">
-        <h1>Dashboard</h1>
-        <div class="cards">
-            <div class="card">
-                <h3>Gold Stock Items</h3>
-                <strong>{{ stock_count }}</strong>
-            </div>
-            <div class="card">
-                <h3>Today's Sale</h3>
-                <strong>৳ {{ "%.2f"|format(today_sales) }}</strong>
-            </div>
-            <div class="card">
-                <h3>Invoices</h3>
-                <strong>{{ invoice_count }}</strong>
-            </div>
-            <div class="card">
-                <h3>Customers</h3>
-                <strong>{{ customer_count }}</strong>
-            </div>
-        </div>
-        <div class="welcome">
-            <h2>Welcome, {{ username }} 👋</h2>
-            <p>The Amin Jewellers Management System is ready to use.</p>
-        </div>
-    </main>
+    <div class="card">
+        <h3 data-i18n="db_sale_card">Today's Sale</h3>
+        <strong>৳ {{ "%.2f"|format(today_sales) }}</strong>
+    </div>
+    <div class="card">
+        <h3 data-i18n="db_invoice_card">Invoices</h3>
+        <strong>{{ invoice_count }}</strong>
+    </div>
+    <div class="card">
+        <h3 data-i18n="db_cust_card">Customers</h3>
+        <strong>{{ customer_count }}</strong>
+    </div>
 </div>
-</body>
-</html>
+<div class="welcome">
+    <h2>Welcome, {{ username }} 👋</h2>
+    <p data-i18n="db_welcome_sub">The Amin Jewellers Management System is ready to use.</p>
+</div>
+{% endblock %}

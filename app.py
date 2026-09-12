@@ -1,6 +1,7 @@
 from functools import wraps
 from pathlib import Path
 import sqlite3
+from datetime import date
 
 from flask import Flask, g, render_template, request, redirect, session, url_for
 
@@ -75,6 +76,7 @@ def create_tables(conn):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             customer_name TEXT NOT NULL,
             mobile TEXT,
+            item_name TEXT,
             karat TEXT NOT NULL,
             weight REAL NOT NULL,
             rate REAL NOT NULL,
@@ -83,6 +85,8 @@ def create_tables(conn):
             bat REAL NOT NULL,
             stone REAL NOT NULL,
             vat REAL NOT NULL,
+            discount REAL NOT NULL DEFAULT 0,
+            wastage_percent REAL NOT NULL DEFAULT 0,
             grand_total REAL NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -94,11 +98,18 @@ def create_tables(conn):
             voucher_id INTEGER,
             customer_name TEXT NOT NULL,
             mobile TEXT,
-            item_details TEXT NOT NULL,
-            weight REAL,
-            amount REAL NOT NULL,
-            interest_rate REAL NOT NULL DEFAULT 0,
-            status TEXT NOT NULL DEFAULT 'Active',
+        item_details TEXT NOT NULL,
+        address TEXT,
+        karat TEXT,
+        weight REAL,
+        bhori REAL NOT NULL DEFAULT 0,
+        ana REAL NOT NULL DEFAULT 0,
+        rati REAL NOT NULL DEFAULT 0,
+        point REAL NOT NULL DEFAULT 0,
+        amount REAL NOT NULL,
+        interest_rate REAL NOT NULL DEFAULT 0,
+        issue_date TEXT,
+        status TEXT NOT NULL DEFAULT 'Active',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
@@ -150,6 +161,26 @@ def run_migrations(conn):
     loan_columns = {row["name"] for row in conn.execute("PRAGMA table_info(loans)")}
     if "voucher_id" not in loan_columns:
         conn.execute("ALTER TABLE loans ADD COLUMN voucher_id INTEGER")
+    for column, definition in (
+        ("address", "TEXT"),
+        ("karat", "TEXT"),
+        ("bhori", "REAL NOT NULL DEFAULT 0"),
+        ("ana", "REAL NOT NULL DEFAULT 0"),
+        ("rati", "REAL NOT NULL DEFAULT 0"),
+        ("point", "REAL NOT NULL DEFAULT 0"),
+        ("issue_date", "TEXT"),
+    ):
+        if column not in loan_columns:
+            conn.execute(f"ALTER TABLE loans ADD COLUMN {column} {definition}")
+
+    invoice_columns = {row["name"] for row in conn.execute("PRAGMA table_info(invoices)")}
+    for column, definition in (
+        ("item_name", "TEXT"),
+        ("discount", "REAL NOT NULL DEFAULT 0"),
+        ("wastage_percent", "REAL NOT NULL DEFAULT 0"),
+    ):
+        if column not in invoice_columns:
+            conn.execute(f"ALTER TABLE invoices ADD COLUMN {column} {definition}")
 
     stock_columns = {row["name"] for row in conn.execute("PRAGMA table_info(gold_stock)")}
     if "serial_no" not in stock_columns:
@@ -550,14 +581,27 @@ def loans():
     if request.method == "POST":
         customer_name = request.form.get("customer_name", "").strip()
         mobile = request.form.get("mobile", "").strip()
+        address = request.form.get("address", "").strip()
         item_details = request.form.get("item_details", "").strip()
+        karat = request.form.get("karat", "").strip()
+        issue_date = request.form.get("issue_date", "").strip()
 
         try:
             weight = float(request.form.get("weight") or 0)
+            bhori = float(request.form.get("bhori") or 0)
+            ana = float(request.form.get("ana") or 0)
+            rati = float(request.form.get("rati") or 0)
+            point = float(request.form.get("point") or 0)
             amount = float(request.form.get("amount") or 0)
             interest_rate = float(request.form.get("interest_rate") or 0)
         except ValueError:
-            weight = amount = interest_rate = 0
+            weight = bhori = ana = rati = point = amount = interest_rate = 0
+
+        if issue_date:
+            try:
+                date.fromisoformat(issue_date)
+            except ValueError:
+                issue_date = ""
 
         if customer_name and item_details and amount > 0 and weight >= 0 and interest_rate >= 0:
             voucher = conn.execute("""
@@ -583,11 +627,12 @@ def loans():
 
             conn.execute("""
                 INSERT INTO loans (
-                    voucher_id, customer_name, mobile, item_details, weight, amount, interest_rate
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    voucher_id, customer_name, mobile, address, item_details, karat,
+                    weight, bhori, ana, rati, point, amount, interest_rate, issue_date
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                voucher_id, customer_name, mobile, item_details,
-                weight, amount, interest_rate
+                voucher_id, customer_name, mobile, address, item_details, karat,
+                weight, bhori, ana, rati, point, amount, interest_rate, issue_date or None
             ))
             conn.commit()
             return redirect(url_for("loans"))
@@ -877,39 +922,65 @@ def calculator():
 @app.route("/invoice/create", methods=["POST"])
 @login_required
 def create_invoice():
-    fields = (
-        "rate", "gold_value", "making", "bat",
-        "stone", "vat", "grand_total", "weight"
-    )
-
     try:
-        values = {field: float(request.form.get(field, 0)) for field in fields}
+        weight = float(request.form.get("weight") or 0)
+        making = float(request.form.get("making") or 0)
+        bat = float(request.form.get("bat") or 0)
+        stone = float(request.form.get("stone") or 0)
+        discount = float(request.form.get("discount") or 0)
+        wastage_percent = float(request.form.get("wastage_percent") or 0)
     except ValueError:
         return redirect("/calculator")
 
     customer_name = request.form.get("customer_name", "").strip()
     mobile = request.form.get("mobile", "").strip()
+    item_name = request.form.get("item_name", "").strip()
     karat = request.form.get("karat", "").strip()
 
-    if not customer_name or not karat or values["weight"] <= 0:
+    if not customer_name or not karat or weight <= 0:
         return redirect("/calculator")
 
     conn = get_db()
+    rate_row = conn.execute(
+        "SELECT rate FROM gold_rates WHERE karat = ?", (karat,)
+    ).fetchone()
+    if rate_row is None:
+        return redirect("/calculator")
+
+    rate = rate_row["rate"]
+    gold_value = (weight / 11.664) * rate
+    wastage = (gold_value * wastage_percent) / 100
+    grand_total = gold_value + making + bat + stone + wastage - discount
+
+    if any(value < 0 for value in (making, bat, stone, discount, wastage_percent)):
+        return redirect("/calculator")
+
     cursor = conn.execute("""
         INSERT INTO invoices (
-            customer_name, mobile, karat, weight, rate, gold_value,
-            making, bat, stone, vat, grand_total
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            customer_name, mobile, item_name, karat, weight, rate, gold_value,
+            making, bat, stone, vat, discount, wastage_percent, grand_total
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
-        customer_name, mobile, karat, values["weight"], values["rate"],
-        values["gold_value"], values["making"], values["bat"],
-        values["stone"], values["vat"], values["grand_total"]
+        customer_name, mobile, item_name, karat, weight, rate, gold_value,
+        making, bat, stone, wastage, discount, wastage_percent, grand_total
     ))
     invoice = conn.execute(
         "SELECT * FROM invoices WHERE id = ?", (cursor.lastrowid,)
     ).fetchone()
     conn.commit()
 
+    return render_template("invoice.html", invoice=invoice)
+
+
+@app.route("/invoice/<int:invoice_id>")
+@login_required
+def invoice_detail(invoice_id):
+    conn = get_db()
+    invoice = conn.execute(
+        "SELECT * FROM invoices WHERE id = ?", (invoice_id,)
+    ).fetchone()
+    if invoice is None:
+        return redirect(url_for("invoices"))
     return render_template("invoice.html", invoice=invoice)
 
 
